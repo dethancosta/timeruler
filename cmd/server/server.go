@@ -8,6 +8,10 @@ import (
 	tc "github.com/dethancosta/timecop/internal"
 )
 
+const (
+	DefaultPort = "6576"
+)
+
 type Server struct {
 	Owner string // TODO replace with actual credentials for auth
 	Addr string
@@ -34,5 +38,9 @@ func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) RemoveTask(w http.ResponseWriter, r *http.Request) {
+	// TODO implement
+}
+
+func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 	// TODO implement
 }
