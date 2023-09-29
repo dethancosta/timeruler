@@ -7,9 +7,11 @@ import (
 
 type TaskList []*Task // TODO implement queue functionality
 
+// GetTaskAtTime returns the task occupying the
+// time block that contains the given time. It 
+// returns nil if there is no task at time t.
 func (tl TaskList) GetTaskAtTime(t time.Time) *Task {
 	// TODO test
-	// use binary search on time 
 	lo := 0
 	hi := len(tl) - 1
 	mid := (hi - lo) / 2
@@ -34,6 +36,9 @@ func (tl TaskList) GetTaskAtTime(t time.Time) *Task {
 	return nil
 }
 
+// IsConflict returns true if there is overlap between
+// the given task and any of the tasks currently in 
+// the TaskList.
 func (tl TaskList) IsConflict(t Task) bool {
 	for _, task := range tl {
 		if task.Tag == BreakTag {continue} // No conflicts with breaks
@@ -45,13 +50,29 @@ func (tl TaskList) IsConflict(t Task) bool {
 	return false
 }
 
+// CreateList creates a new TaskList from the given tasks.
+// It returns nil and an error if there is a time conflict.
 func CreateList(tasks ...Task) (TaskList, error) {
 	// TODO implement
 	// add all tasks, sort, then check for conflicts
 	return nil, nil
 }
 
+// IsConsistent returns true if the TaskList has no overlapping
+// tasks, and false otherwise. It assumes that the TaskList is 
+// sorted.
+func (tl TaskList) IsConsistent() bool {
+	for i := 0; i < len(tl) - 1; i++ {
+		if tl[i].EndTime.After(tl[i+1].StartTime) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (tl TaskList) sort() {
-	// TODO ensure this works without pointer receiver (and that logic is correct)
+	// TODO test
+	// ensure this works without pointer receiver (and that logic is correct)
 	sort.Slice(tl, func(i, j int) bool {return tl[j].StartTime.After(tl[i].EndTime)})
 }
