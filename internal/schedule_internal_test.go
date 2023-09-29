@@ -5,5 +5,6 @@ import (
 )
 
 func TestGetCurrentTask(t *testing.T) {
-	t.Fatal("TODO: implement schedule tests.")
+	t.Log("TODO: implement schedule tests.")
+	t.Fail()
 }
