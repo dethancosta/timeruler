@@ -53,9 +53,26 @@ func (tl TaskList) IsConflict(t Task) bool {
 // CreateList creates a new TaskList from the given tasks.
 // It returns nil and an error if there is a time conflict.
 func CreateList(tasks ...Task) (TaskList, error) {
-	// TODO implement
+	// TODO test
 	// add all tasks, sort, then check for conflicts
-	return nil, nil
+
+	for _, t := range tasks {
+		if !t.IsValid() {
+			return nil, InvalidScheduleError{"Invalid Task was given."}
+		}
+	}
+
+	tl := TaskList{}
+	for _, t := range tasks {
+		tl = append(tl, &t)
+	}
+
+	tl.sort()
+	if !tl.IsConsistent() {
+		return nil, InvalidScheduleError{"List of tasks contains a confict."}
+	}
+
+	return tl, nil
 }
 
 // IsConsistent returns true if the TaskList has no overlapping
