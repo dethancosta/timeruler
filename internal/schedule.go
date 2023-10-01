@@ -10,7 +10,7 @@ type Schedule struct {
 	Tasks TaskList
 	CurrentTask *Task
 	CurrentID int // ID of the current task
-	OldTasks TaskList // Tasks that have been crossed out or completed
+	OldTasks TaskList // Tasks that have been crossed out
 }
 
 // ChangeCurrentTaskUntil updates the schedule's current task 
@@ -24,8 +24,15 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 
 	newCurrent := NewTask(desc, time.Now(), end).WithTag(tag)
 	if !s.Tasks.IsConflict(*newCurrent) {
-		s.Tasks = append(s.Tasks, newCurrent)
-		s.Tasks.sort()
+		_, idx := s.Tasks.GetTaskAtTime(time.Now())
+		s.Tasks[idx].EndTime = time.Now()
+		err := s.Tasks[idx].Quantize()
+		if err != nil {return err}
+
+		s.Tasks = append(s.Tasks[:idx+1], append([]*Task{newCurrent}, s.Tasks[idx+1:]...)...)
+		
+		//s.Tasks = append(s.Tasks, newCurrent)
+		//s.Tasks.sort()
 	} else {
 		// TODO implement update of affected tasks
 	}
@@ -44,6 +51,12 @@ func (s *Schedule) GetCurrentTaskStr() string {
 // overlap/conflict or if the tasks could otherwise not be added
 func (s *Schedule) AddTask(t Task) error {
 	// TODO test
+	if t.StartTime.Before(time.Now()) {
+		return InvalidTimeError{"Task cannot start in the past."}
+	}
+	if !t.IsValid() {
+		return InvalidTimeError{"Task times are invalid."}
+	}
 	
 	if s.Tasks.IsConflict(t) {
 		return InvalidScheduleError{"Task conflicts with schedule."}
@@ -63,6 +76,19 @@ func (s *Schedule) AddTask(t Task) error {
 // rather than completely removed.
 func (s *Schedule) UpdateTimeBlock(hardRemove bool, tasks ...Task) error {
 	// TODO implement
+
+	for _, t := range tasks {
+		if !t.IsValid() {
+			return InvalidTimeError{"One or more tasks has an invalid time."}
+		}
+		if !t.StartTime.Before(time.Now()) {
+			return InvalidTimeError{"Task cannot start before the current time."}
+		}
+		// TODO consider checking if task's endTime is after today.
+	}
+
+	// TODO finish implementing
+
 	return nil
 }
 
@@ -73,7 +99,7 @@ func (s *Schedule) UpdateTimeBlock(hardRemove bool, tasks ...Task) error {
 func (s *Schedule) UpdateCurrentTask() error {
 	// TODO test
 	// For use with timer or change/request from client
-	s.CurrentTask = s.Tasks.GetTaskAtTime(time.Now())
+	s.CurrentTask, _ = s.Tasks.GetTaskAtTime(time.Now())
 
 	return nil
 }
@@ -82,9 +108,23 @@ func (s *Schedule) UpdateCurrentTask() error {
 // It returns an error if the id is invalid or the 
 // task could otherwise not be removed.
 func (s *Schedule) RemoveTask(id int) error {
-	//TODO implement
+	//TODO test
 	// id corresponds to index in Tasks queue
 	// return an error if the task is a break?
+	if id < 0 || id >= len(s.Tasks) {
+		return IndexOutOfBoundsError{}
+	}
+
+	if s.Tasks[id].IsBreak() {
+		return InvalidScheduleError{"Can't remove a break (considered empty)."}
+	}
+	
+	if id == len(s.Tasks) - 1 {
+		s.Tasks = s.Tasks[:id]
+		return nil
+	}
+	
+	s.Tasks = append(s.Tasks[:id], s.Tasks[id+1:]...)
 	return nil
 }
 
@@ -92,9 +132,27 @@ func (s *Schedule) RemoveTask(id int) error {
 // list. It returns an error if the id is invalid or
 // the task could otherwise not be crossed off.
 func (s *Schedule) CrossOutTask(id int) error {
-	// TODO implement
+	// TODO test
 	// id corresponds to index in Tasks queue
 	// return an error if the task is a break
+
+	if id < 0 || id >= len(s.Tasks) {
+		return IndexOutOfBoundsError{}
+	}
+	if s.Tasks[id].IsBreak() {
+		return InvalidScheduleError{"Can't remove a break (considered empty slot)."}
+	}
+
+	s.OldTasks = append(s.OldTasks, s.Tasks[id])
+
+	// TODO consider not removing task from s.Tasks, but instead checking if each task 
+	// is in OldTasks in other Schedule methods.
+	if id == len(s.Tasks) - 1 {
+		s.Tasks = s.Tasks[:id]
+	} else {
+		s.Tasks = append(s.Tasks[:id], s.Tasks[id+1:]...)
+	}
+	
 	return nil
 }
 

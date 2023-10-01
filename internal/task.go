@@ -54,6 +54,11 @@ func Break(start, end time.Time) *Task {
 	return b
 }
 
+// IsBreak returns true if the task has a break tag
+func (t Task) IsBreak() bool {
+	return t.Tag == BreakTag
+}
+
 // String returns the string representation of a Task.
 func (t Task) String() string {
 	s := t.Description

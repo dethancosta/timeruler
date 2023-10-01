@@ -11,6 +11,10 @@ type InvalidScheduleError struct {
 	msg string
 }
 
+type IndexOutOfBoundsError struct {
+	msg string
+}
+
 func (e InvalidTimeError) Error() string {
 	return e.msg
 }
@@ -21,4 +25,8 @@ func (e TimeConflictError) Error() string {
 
 func (e InvalidScheduleError) Error() string {
 	return e.msg
+}
+
+func (e IndexOutOfBoundsError) Error() string {
+	return "Index out of bounds"
 }
