@@ -78,6 +78,45 @@ func (t Task) IsValid() bool {
 	return t.EndTime.Sub(t.StartTime).Minutes() >= 5.0
 }
 
+// Conflicts returns true if the given task's time span overlaps
+// with the receiver task's time span.
+func (t Task) Conflicts(other Task) bool {
+	// TODO test
+	return t.StartTime.Before(other.EndTime) && t.StartTime.Before(other.EndTime)
+}
+
+// Resolve updates the time of the old task to remove overlap
+// between the old task's time span and that of the new task.
+// it returns a Task with the updated times of oldTask. If 
+// newTask's time is a subset of oldTask's, 2 Tasks 
+// will be returned. It assumes the tasks have a conflict,
+// so oldTask may be incorrectly updated if there is none.
+func Resolve(oldTask, newTask *Task) []*Task {
+	// TODO test
+	if oldTask.StartTime.Before(newTask.StartTime) {
+		if oldTask.EndTime.Compare(newTask.EndTime) <= 0 {
+			oldTask.EndTime = newTask.StartTime
+			return []*Task{oldTask}
+		}
+		postTask := &Task{
+			Description: oldTask.Description,
+			StartTime: newTask.EndTime,
+			EndTime: oldTask.EndTime,
+			Tag: oldTask.Tag,
+		}
+		oldTask.EndTime = newTask.StartTime
+		return []*Task{oldTask, postTask}
+	} else {
+		if oldTask.EndTime.Compare(newTask.EndTime) <= 0 {
+			// oldTask will be removed
+			return nil
+		} else {
+			oldTask.StartTime = newTask.EndTime
+			return []*Task{oldTask}
+		}
+	}
+}
+
 
 // Helper functions
 

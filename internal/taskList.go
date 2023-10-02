@@ -88,42 +88,33 @@ func (tl TaskList) IsConsistent() bool {
 	return true
 }
 
-// ResolveConflict adjusts the start and end times of the given tasks so that
-// there is no longer a conflict. It updates a copy of the task list and 
-// returns the updated copy.
-func (tl TaskList) ResolveConflict(oldTaskId int, newTask *Task) (TaskList, error) {
+// ResolveConflict adjusts the start and end times of the tasks starting at
+// the given index to accomodate the new given task. It updates a copy of 
+// the task list and returns the updated copy.
+func (tl TaskList) ResolveConflicts(oldTaskId int, newTask *Task) (TaskList, error) {
 	// TODO test
-	// TODO change so that all conflicts are resolved, not just given idx
 	if oldTaskId < 0 || oldTaskId >= len(tl) {
 		return nil, IndexOutOfBoundsError{}
 	}
 	oldTask := tl.get(oldTaskId)
-	if oldTask.StartTime.Before(newTask.StartTime) {
-		if oldTask.EndTime.Compare(newTask.EndTime) <= 0 {
-			oldTask.EndTime = newTask.StartTime
-			tl = append(tl[:oldTaskId+1], append([]*Task{newTask}, tl[oldTaskId+1:]...)...)
-		} else {
-			postTask := NewTask(
-				oldTask.Description, 
-				newTask.EndTime, 
-				oldTask.EndTime,
-			).WithTag(oldTask.Tag)
 
-			oldTask.EndTime = newTask.StartTime
-			tl = append(tl[:oldTaskId+1], append([]*Task{postTask}, tl[oldTaskId+1:]...)...)
-		}
-	} else { //oldTask starts after newTask
-		if oldTask.EndTime.Before(newTask.EndTime) {
-			if oldTaskId == len(tl) - 1 {
-				tl = append(tl[:oldTaskId], newTask)
-			}
-			tl = append(tl[:oldTaskId], append([]*Task{newTask}, tl[oldTaskId+1:]...)...)
+	for oldTaskId < len(tl) && oldTask.Conflicts(*newTask) {
+		oldTask = tl.get(oldTaskId)
+
+		updated := Resolve(oldTask, newTask)
+		if oldTaskId < len(tl)-1 {
+			post := tl[oldTaskId+1:]
+			tl = append(tl[:oldTaskId], updated...)
+			tl = append(tl, post...)
 		} else {
-			oldTask.StartTime = newTask.EndTime
-			tl = append(tl[:oldTaskId], append([]*Task{newTask}, tl[oldTaskId:]...)...)
+			tl = append(tl[:oldTaskId], updated...)
 		}
-		return tl, nil
+
+		oldTaskId++
 	}
+
+	tl = append(tl, newTask)
+	tl.sort()
 
 	return tl, nil
 }
