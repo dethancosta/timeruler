@@ -17,15 +17,20 @@ type Schedule struct {
 // to have the given description, tag, and end time. It does not
 // assume that there will not be a conflict.
 func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error {
-	// TODO implement
+	// TODO test
 	if end.Compare(time.Now()) <= 1 {
 		return InvalidTimeError{"Task ends before the current time."}
 	}
 
 	newCurrent := NewTask(desc, time.Now(), end).WithTag(tag)
+	err := newCurrent.Quantize()
+	if err != nil {
+		return err
+	}
+
 	if !s.Tasks.IsConflict(*newCurrent) {
 		_, idx := s.Tasks.GetTaskAtTime(time.Now())
-		s.Tasks[idx].EndTime = time.Now()
+		s.Tasks[idx].EndTime = time.Now() // Should be the break
 		err := s.Tasks[idx].Quantize()
 		if err != nil {return err}
 
@@ -34,7 +39,12 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 		//s.Tasks = append(s.Tasks, newCurrent)
 		//s.Tasks.sort()
 	} else {
-		// TODO implement update of affected tasks
+		_, idx := s.Tasks.GetTaskAtTime(time.Now())
+		newList, err := s.Tasks.ResolveConflicts(idx, newCurrent)
+		if err != nil {
+			return err
+		}
+		s.Tasks = newList
 	}
 
 	return nil
