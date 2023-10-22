@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"time"
 	"testing"
+	"time"
 )
 
 func TestInvalidTimes(t *testing.T) {
@@ -40,14 +40,14 @@ func TestWithTag(t *testing.T) {
 	tm1 := time.Now()
 	tm2 := time.Now().Add(5 * time.Minute)
 	task1 := NewTask("Task 1", tm1, tm2).WithTag("Tag1")
-	
+
 	if task1.Tag != "Tag1" {
 		t.Fatalf("task1 tag incorrect.\nWanted \"Tag1\", got: %s", task1.Tag)
 	}
 }
 
 func TestBreak(t *testing.T) {
-	bTask := Break(time.Now(), time.Now().Add(5 * time.Minute))
+	bTask := Break(time.Now(), time.Now().Add(5*time.Minute))
 	if bTask.Description != "Take a break" {
 		t.Fatalf("break incorrect description. Wanted \"Take a break\", got: %s", bTask.Description)
 	}

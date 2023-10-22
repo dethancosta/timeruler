@@ -1,6 +1,5 @@
 package internal
 
-
 type InvalidTimeError struct {
 	msg string
 }

@@ -11,23 +11,25 @@ const (
 )
 
 type Task struct {
-	Description string `json:"description"`
-	StartTime time.Time `json:"startTime"`
-	EndTime time.Time `json:"endTime"`
-	Tag string `json:"tag"`
-} 
+	Description string    `json:"description"`
+	StartTime   time.Time `json:"startTime"`
+	EndTime     time.Time `json:"endTime"`
+	Tag         string    `json:"tag"`
+}
 
 // NewTask returns a new Task object with the given description,
 // start time, and end time. If end <= start, a nil pointer is returned.
 func NewTask(desc string, start, end time.Time) *Task {
 	t := &Task{
 		Description: desc,
-		StartTime: start,
-		EndTime: end,
+		StartTime:   start,
+		EndTime:     end,
 	}
 
 	err := t.Quantize()
-	if err != nil {return nil}
+	if err != nil {
+		return nil
+	}
 
 	return t
 }
@@ -46,10 +48,12 @@ func Break(start, end time.Time) *Task {
 		"Take a break",
 		start,
 		end,
-		).WithTag(BreakTag)
+	).WithTag(BreakTag)
 
 	err := b.Quantize()
-	if err != nil {return nil}
+	if err != nil {
+		return nil
+	}
 
 	return b
 }
@@ -87,8 +91,8 @@ func (t Task) Conflicts(other Task) bool {
 
 // Resolve updates the time of the old task to remove overlap
 // between the old task's time span and that of the new task.
-// it returns a Task with the updated times of oldTask. If 
-// newTask's time is a subset of oldTask's, 2 Tasks 
+// it returns a Task with the updated times of oldTask. If
+// newTask's time is a subset of oldTask's, 2 Tasks
 // will be returned. It assumes the tasks have a conflict,
 // so oldTask may be incorrectly updated if there is none.
 func Resolve(oldTask, newTask *Task) []*Task {
@@ -100,9 +104,9 @@ func Resolve(oldTask, newTask *Task) []*Task {
 		}
 		postTask := &Task{
 			Description: oldTask.Description,
-			StartTime: newTask.EndTime,
-			EndTime: oldTask.EndTime,
-			Tag: oldTask.Tag,
+			StartTime:   newTask.EndTime,
+			EndTime:     oldTask.EndTime,
+			Tag:         oldTask.Tag,
 		}
 		oldTask.EndTime = newTask.StartTime
 		return []*Task{oldTask, postTask}
@@ -117,13 +121,14 @@ func Resolve(oldTask, newTask *Task) []*Task {
 	}
 }
 
-
 // Helper functions
 
 // Quantize rounds a task's start time and end time
 // to 5-minute increments.
 func (t *Task) Quantize() error {
-	if !t.IsValid() {return InvalidTimeError{"Invalid task time."}}
+	if !t.IsValid() {
+		return InvalidTimeError{"Invalid task time."}
+	}
 
 	t.StartTime = t.StartTime.Round(5 * time.Minute)
 	t.EndTime = t.EndTime.Round(5 * time.Minute)

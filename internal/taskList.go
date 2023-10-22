@@ -8,7 +8,7 @@ import (
 type TaskList []*Task
 
 // GetTaskAtTime returns the task occupying the
-// time block that contains the given time. It 
+// time block that contains the given time. It
 // returns nil if there is no task at time t.
 func (tl TaskList) GetTaskAtTime(t time.Time) (*Task, int) {
 	// TODO test
@@ -37,11 +37,13 @@ func (tl TaskList) GetTaskAtTime(t time.Time) (*Task, int) {
 }
 
 // IsConflict returns true if there is overlap between
-// the given task and any of the tasks currently in 
+// the given task and any of the tasks currently in
 // the TaskList.
 func (tl TaskList) IsConflict(t Task) bool {
 	for _, task := range tl {
-		if task.Tag == BreakTag {continue} // No conflicts with breaks
+		if task.Tag == BreakTag {
+			continue
+		} // No conflicts with breaks
 		if t.StartTime.Before(task.EndTime) && task.StartTime.Before(t.EndTime) {
 			return true
 		}
@@ -76,10 +78,10 @@ func CreateList(tasks ...Task) (TaskList, error) {
 }
 
 // IsConsistent returns true if the TaskList has no overlapping
-// tasks, and false otherwise. It assumes that the TaskList is 
+// tasks, and false otherwise. It assumes that the TaskList is
 // sorted.
 func (tl TaskList) IsConsistent() bool {
-	for i := 0; i < len(tl) - 1; i++ {
+	for i := 0; i < len(tl)-1; i++ {
 		if tl[i].EndTime.After(tl[i+1].StartTime) {
 			return false
 		}
@@ -89,7 +91,7 @@ func (tl TaskList) IsConsistent() bool {
 }
 
 // ResolveConflict adjusts the start and end times of the tasks starting at
-// the given index to accomodate the new given task. It updates a copy of 
+// the given index to accomodate the new given task. It updates a copy of
 // the task list and returns the updated copy.
 func (tl TaskList) ResolveConflicts(oldTaskId int, newTask *Task) (TaskList, error) {
 	// TODO test
@@ -122,7 +124,7 @@ func (tl TaskList) ResolveConflicts(oldTaskId int, newTask *Task) (TaskList, err
 func (tl TaskList) sort() {
 	// TODO test
 	// ensure this works without pointer receiver (and that logic is correct)
-	sort.Slice(tl, func(i, j int) bool {return tl[j].StartTime.After(tl[i].EndTime)})
+	sort.Slice(tl, func(i, j int) bool { return tl[j].StartTime.After(tl[i].EndTime) })
 }
 
 func (tl TaskList) get(idx int) *Task {

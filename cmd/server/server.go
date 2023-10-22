@@ -13,10 +13,10 @@ const (
 )
 
 type Server struct {
-	Owner string // TODO replace with actual credentials for auth
-	Addr string
-	AOFPath string //Filepath for append-only log file
-	Schedule tc.Schedule	
+	Owner    string // TODO replace with actual credentials for auth
+	Addr     string
+	AOFPath  string //Filepath for append-only log file
+	Schedule tc.Schedule
 }
 
 func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
