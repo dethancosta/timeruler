@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"sort"
 	"time"
 )
@@ -65,13 +66,24 @@ func CreateList(tasks ...Task) (TaskList, error) {
 	}
 
 	tl := TaskList{}
-	for _, t := range tasks {
-		tl = append(tl, &t)
+	for t := 0; t < len(tasks); t++ {
+		tl = append(tl, &tasks[t])
 	}
 
 	tl.sort()
+	fmt.Println(tl) // TODO delete this line
 	if !tl.IsConsistent() {
-		return nil, InvalidScheduleError{"List of tasks contains a confict."}
+		return nil, InvalidScheduleError{"List of tasks contains a conflict."}
+	}
+	var former time.Time
+	var latter time.Time
+	for i := 0; i < len(tl)-1; i++ {
+		former = tl[i].EndTime
+		latter = tl[i+1].StartTime
+		if former.Compare(latter) != 0 {
+			b := Break(former, latter)
+			tl = append(tl[:i+1], append([]*Task{&b}, tl[i+1:]...)...)
+		}
 	}
 
 	return tl, nil
@@ -124,7 +136,7 @@ func (tl TaskList) ResolveConflicts(oldTaskId int, newTask *Task) (TaskList, err
 func (tl TaskList) sort() {
 	// TODO test
 	// ensure this works without pointer receiver (and that logic is correct)
-	sort.Slice(tl, func(i, j int) bool { return tl[j].StartTime.After(tl[i].EndTime) })
+	sort.Slice(tl, func(i, j int) bool { return tl[i].EndTime.Compare(tl[j].StartTime) <= 0 })
 }
 
 func (tl TaskList) get(idx int) *Task {

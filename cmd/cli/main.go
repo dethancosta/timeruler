@@ -1,4 +1,4 @@
-package cli
+package main
 
 import (
 	"github.com/dethancosta/timecop/internal"
@@ -11,5 +11,10 @@ type App struct {
 }
 
 func main() {
+	schedule, err := internal.BuildFromFile()
+	if err != nil {
+		panic(err)
+	}
 
+	schedule.Print()
 }

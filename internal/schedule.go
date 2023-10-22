@@ -40,7 +40,7 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 		return err
 	}
 
-	if !s.Tasks.IsConflict(*newCurrent) {
+	if !s.Tasks.IsConflict(newCurrent) {
 		_, idx := s.Tasks.GetTaskAtTime(time.Now())
 		s.Tasks[idx].EndTime = time.Now() // Should be the break
 		err := s.Tasks[idx].Quantize()
@@ -48,13 +48,13 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 			return err
 		}
 
-		s.Tasks = append(s.Tasks[:idx+1], append([]*Task{newCurrent}, s.Tasks[idx+1:]...)...)
+		s.Tasks = append(s.Tasks[:idx+1], append([]*Task{&newCurrent}, s.Tasks[idx+1:]...)...)
 
 		//s.Tasks = append(s.Tasks, newCurrent)
 		//s.Tasks.sort()
 	} else {
 		_, idx := s.Tasks.GetTaskAtTime(time.Now())
-		newList, err := s.Tasks.ResolveConflicts(idx, newCurrent)
+		newList, err := s.Tasks.ResolveConflicts(idx, &newCurrent)
 		if err != nil {
 			return err
 		}
@@ -183,6 +183,8 @@ func (s Schedule) Print() {
 		sb.WriteString("-" + t.EndTime.Format(time.TimeOnly) + "] ")
 		sb.WriteString(t.Description + " (" + t.Tag + ")\n")
 	}
+
+	fmt.Println(sb.String())
 }
 
 // BuildFromFile creates a schedule from a csv file with filename schedule.csv
@@ -194,14 +196,14 @@ func BuildFromFile() (*Schedule, error) {
 		return nil, fmt.Errorf("BuildFromFile: %w", err)
 	}
 	r := csv.NewReader(f)
-	taskList := TaskList{}
+	taskList := []Task{}
 	lc := 0
 	var desc string
 	var start time.Time
 	var end time.Time
 	var tag string
 
-	for line, err := r.Read(); err == nil; {
+	for line, err := r.Read(); err == nil; line, err = r.Read() {
 		lc++
 		if len(line) < 3 {
 			return nil,
@@ -223,14 +225,18 @@ func BuildFromFile() (*Schedule, error) {
 		task := NewTask(desc, start, end).WithTag(tag)
 		taskList = append(taskList, task)
 	}
-	if err != io.EOF {
+	if err != nil && err != io.EOF {
 		return nil, fmt.Errorf("BuildFromFile: %w", err)
 	}
 
-	taskList.sort()
-	current, index := taskList.GetTaskAtTime(time.Now())
+	tList, err := CreateList(taskList...)
+	if err != nil {
+		return nil, fmt.Errorf("BuildFromFile: %w", err)
+	}
+
+	current, index := tList.GetTaskAtTime(time.Now())
 	return &Schedule{
-		Tasks:       taskList,
+		Tasks:       tList,
 		CurrentTask: current,
 		CurrentID:   index,
 	}, nil

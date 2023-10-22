@@ -19,8 +19,8 @@ type Task struct {
 
 // NewTask returns a new Task object with the given description,
 // start time, and end time. If end <= start, a nil pointer is returned.
-func NewTask(desc string, start, end time.Time) *Task {
-	t := &Task{
+func NewTask(desc string, start, end time.Time) Task {
+	t := Task{
 		Description: desc,
 		StartTime:   start,
 		EndTime:     end,
@@ -28,7 +28,7 @@ func NewTask(desc string, start, end time.Time) *Task {
 
 	err := t.Quantize()
 	if err != nil {
-		return nil
+		return Task{}
 	}
 
 	return t
@@ -36,14 +36,14 @@ func NewTask(desc string, start, end time.Time) *Task {
 
 // WithTag adds the given tag to the receiver pointer
 // and returns the result.
-func (t *Task) WithTag(tag string) *Task {
+func (t Task) WithTag(tag string) Task {
 	t.Tag = tag
 	return t
 }
 
 // Break returns a Task object to be used
 // as "free time" in a schedule.
-func Break(start, end time.Time) *Task {
+func Break(start, end time.Time) Task {
 	b := NewTask(
 		"Take a break",
 		start,
@@ -52,7 +52,7 @@ func Break(start, end time.Time) *Task {
 
 	err := b.Quantize()
 	if err != nil {
-		return nil
+		return Task{}
 	}
 
 	return b
