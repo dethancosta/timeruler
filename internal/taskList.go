@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"sort"
 	"time"
 )
@@ -15,7 +14,7 @@ func (tl TaskList) GetTaskAtTime(t time.Time) (*Task, int) {
 	// TODO test
 	lo := 0
 	hi := len(tl) - 1
-	mid := (hi - lo) / 2
+	mid := (hi + lo) / 2
 
 	for lo <= hi {
 
@@ -53,9 +52,9 @@ func (tl TaskList) IsConflict(t Task) bool {
 	return false
 }
 
-// CreateList creates a new TaskList from the given tasks.
+// NewTaskList creates a new TaskList from the given tasks.
 // It returns nil and an error if there is a time conflict.
-func CreateList(tasks ...Task) (TaskList, error) {
+func NewTaskList(tasks ...Task) (TaskList, error) {
 	// TODO test
 	// add all tasks, sort, then check for conflicts
 
@@ -71,7 +70,6 @@ func CreateList(tasks ...Task) (TaskList, error) {
 	}
 
 	tl.sort()
-	fmt.Println(tl) // TODO delete this line
 	if !tl.IsConsistent() {
 		return nil, InvalidScheduleError{"List of tasks contains a conflict."}
 	}

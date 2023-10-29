@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/dethancosta/timecop/internal"
 )
 
@@ -16,5 +18,5 @@ func main() {
 		panic(err)
 	}
 
-	schedule.Print()
+	fmt.Println(schedule.String())
 }

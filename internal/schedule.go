@@ -67,7 +67,7 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 // GetCurrentTaskStr returns the schedule's current task
 // as a formatted string.
 func (s *Schedule) GetCurrentTaskStr() string {
-	return strconv.Itoa(s.CurrentID) + "\t" + s.CurrentTask.String()
+	return s.CurrentTask.String()
 }
 
 // AddTask is used when no conflicts with the schedule's current
@@ -132,13 +132,14 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 }
 
 // UpdateCurrentTask checks the schedule's task list for the
-// task scheduled for the time that the function is called.
+// task scheduled for the time that the function is called,
+// and updates the schedule's CurrentTask member accordingly.
 // Note that the task will be nil if there is no currently
 // scheduled task.
 func (s *Schedule) UpdateCurrentTask() error {
 	// TODO test
 	// For use with timer or change/request from client
-	s.CurrentTask, _ = s.Tasks.GetTaskAtTime(time.Now())
+	s.CurrentTask, s.CurrentID = s.Tasks.GetTaskAtTime(time.Now())
 
 	return nil
 }
@@ -170,7 +171,7 @@ func (s *Schedule) RemoveTask(id int) error {
 
 // Print prints the schedule in a barebones format.
 // Intended for debugging.
-func (s Schedule) Print() {
+func (s Schedule) String() string {
 	sb := strings.Builder{}
 	for i, t := range s.Tasks {
 		if i == s.CurrentID {
@@ -184,14 +185,29 @@ func (s Schedule) Print() {
 		sb.WriteString(t.Description + " (" + t.Tag + ")\n")
 	}
 
-	fmt.Println(sb.String())
+	return sb.String()
+}
+
+// NewSchedule returns a new Schedule with the given TaskList as a Tasks
+// member. It assumes the TaskList is consistent, and returns an empty
+// schedule otherwise.
+func NewSchedule(taskList TaskList) Schedule {
+	if !taskList.IsConsistent() {
+		return Schedule{}
+	}
+	currentTask, currentIdx := taskList.GetTaskAtTime(time.Now())
+	return Schedule{
+		Tasks: taskList,
+		CurrentTask: currentTask,
+		CurrentID: currentIdx,
+	}
 }
 
 // BuildFromFile creates a schedule from a csv file with filename schedule.csv
-func BuildFromFile() (*Schedule, error) {
+func BuildFromFile(fileName string) (*Schedule, error) {
 	// TODO test
 	// TODO log?
-	f, err := os.Open("schedule.csv")
+	f, err := os.Open(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("BuildFromFile: %w", err)
 	}
@@ -229,7 +245,7 @@ func BuildFromFile() (*Schedule, error) {
 		return nil, fmt.Errorf("BuildFromFile: %w", err)
 	}
 
-	tList, err := CreateList(taskList...)
+	tList, err := NewTaskList(taskList...)
 	if err != nil {
 		return nil, fmt.Errorf("BuildFromFile: %w", err)
 	}

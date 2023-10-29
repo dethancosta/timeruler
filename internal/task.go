@@ -18,7 +18,7 @@ type Task struct {
 }
 
 // NewTask returns a new Task object with the given description,
-// start time, and end time. If end <= start, a nil pointer is returned.
+// start time, and end time. If end <= start, an empty task is returned.
 func NewTask(desc string, start, end time.Time) Task {
 	t := Task{
 		Description: desc,
@@ -134,4 +134,11 @@ func (t *Task) Quantize() error {
 	t.EndTime = t.EndTime.Round(5 * time.Minute)
 
 	return nil
+}
+
+// IsEmpty tests whether t is an empty (default-value) Task
+func (t Task) IsEmpty() bool {
+	return t.StartTime.IsZero() &&
+		t.EndTime.IsZero() &&
+		t.Description == ""
 }

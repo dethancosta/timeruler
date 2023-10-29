@@ -14,16 +14,16 @@ var (
 	task5   = NewTask("Task 5", time.Now().Add(500*time.Minute), time.Now().Add(550*time.Minute))
 	task6   = NewTask("Task 6", time.Now().Add(-10*time.Minute), time.Now().Add(-5*time.Minute))
 
-	validList = TaskList{
+	validList, _ = NewTaskList(
 		task1,
 		task2,
 		task3,
-	}
+	)
 	invalidList = TaskList{
-		task1,
-		task2,
-		task3,
-		task2_5,
+		&task1,
+		&task2,
+		&task3,
+		&task2_5,
 	}
 	emptyList = TaskList{}
 )
@@ -74,17 +74,17 @@ func TestGetTaskAtTime(t *testing.T) {
 }
 
 func TestIsConflict(t *testing.T) {
-	test1 := validList.IsConflict(*task2_5)
+	test1 := validList.IsConflict(task2_5)
 	if !test1 {
 		t.Fatalf("Wanted true, got: false")
 	}
 
-	test2 := validList.IsConflict(*task5)
+	test2 := validList.IsConflict(task5)
 	if test2 {
 		t.Fatalf("Wanted false, got true")
 	}
 
-	test3 := validList.IsConflict(*task6)
+	test3 := validList.IsConflict(task6)
 	if test3 {
 		t.Fatalf("Wanted false, got true")
 	}
