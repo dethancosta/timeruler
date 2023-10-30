@@ -151,7 +151,7 @@ func (s *Schedule) RemoveTask(id int) error {
 	//TODO test
 	//TODO append to log
 	// id corresponds to index in Tasks queue
-	// return an error if the task is a break?
+	// fill void with break (and consolidate if break at either end)
 	if id < 0 || id >= len(s.Tasks) {
 		return IndexOutOfBoundsError{}
 	}

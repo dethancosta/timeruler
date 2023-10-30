@@ -23,6 +23,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Handle("/get", http.HandlerFunc(s.GetSchedule))
+	router.Handle("/{taskId}", http.HandlerFunc(s.RemoveTask)).Methods("DELETE")
 
 	fmt.Printf("Running on %s\n", DefaultPort)
 	http.ListenAndServe("localhost:" + DefaultPort, router)
