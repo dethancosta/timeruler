@@ -65,13 +65,13 @@ func (t Task) IsBreak() bool {
 
 // String returns the string representation of a Task.
 func (t Task) String() string {
-	s := t.Description
+	s := t.Description + "\t"
+	s += t.StartTime.Format(time.DateTime) + "\t"
+	s += t.EndTime.Format(time.DateTime) + "\t"
 
 	if len(strings.TrimSpace(t.Tag)) > 0 {
-		s += fmt.Sprintf("\t(%s)\t", t.Tag)
+		s += fmt.Sprintf("\t(%s)", t.Tag)
 	}
-
-	s += t.EndTime.Format(time.TimeOnly)
 
 	return s
 }

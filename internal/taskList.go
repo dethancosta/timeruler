@@ -2,6 +2,7 @@ package internal
 
 import (
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -11,7 +12,7 @@ type TaskList []*Task
 // time block that contains the given time. It
 // returns nil if there is no task at time t.
 func (tl TaskList) GetTaskAtTime(t time.Time) (*Task, int) {
-	// TODO test
+	/* TODO delete 
 	lo := 0
 	hi := len(tl) - 1
 	mid := (hi + lo) / 2
@@ -31,6 +32,12 @@ func (tl TaskList) GetTaskAtTime(t time.Time) (*Task, int) {
 		}
 
 		return tl[mid], mid
+	}
+	*/
+	for i := range tl {
+		if tl[i].StartTime.Compare(t) <= 0 && tl[i].EndTime.Compare(t) > 0 {
+			return tl[i], i
+		}
 	}
 
 	return nil, -1
@@ -139,4 +146,12 @@ func (tl TaskList) sort() {
 
 func (tl TaskList) get(idx int) *Task {
 	return tl[idx]
+}
+
+func (tl TaskList) String() string {
+	sb := strings.Builder{}
+	for t := range tl {
+		sb.WriteString(tl[t].String() + "\n")
+	}
+	return sb.String()
 }

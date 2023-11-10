@@ -6,15 +6,15 @@ import (
 )
 
 var (
-	task1   = NewTask("Task 1", time.Now(), time.Now().Add(30*time.Minute))
+	task1   = NewTask("Task 1", time.Now().Add(-5*time.Minute), time.Now().Add(30*time.Minute))
 	task2   = NewTask("Task 2", time.Now().Add(35*time.Minute), time.Now().Add(45*time.Minute))
-	task3   = NewTask("Task 3", time.Now().Add(50*time.Minute), time.Now().Add(55*time.Minute))
+	task3   = NewTask("Task 3", time.Now().Add(45*time.Minute), time.Now().Add(55*time.Minute))
 	task4   = NewTask("Task 4", time.Now().Add(100*time.Minute), time.Now().Add(105*time.Minute))
 	task2_5 = NewTask("Task 2.5", time.Now().Add(40*time.Minute), time.Now().Add(50*time.Minute))
 	task5   = NewTask("Task 5", time.Now().Add(500*time.Minute), time.Now().Add(550*time.Minute))
 	task6   = NewTask("Task 6", time.Now().Add(-10*time.Minute), time.Now().Add(-5*time.Minute))
 
-	validList, _ = NewTaskList(
+	validList, err = NewTaskList(
 		task1,
 		task2,
 		task3,
@@ -28,11 +28,19 @@ var (
 	emptyList = TaskList{}
 )
 
+func TestNewTaskList(t *testing.T) {
+	if len(validList) != 4 {
+		t.Fatalf("Expected length: 4, Actual length: %d", len(validList))
+	}
+}
+
 func TestGetTaskAtTime(t *testing.T) {
-	// TODO test that idx numbers are correct
-	t1, _ := validList.GetTaskAtTime(time.Now().Add(10 * time.Minute))
+	if err != nil {
+		t.Fatalf("Couldn't create valid list: %s", err.Error())
+	}
+	t1, _ := validList.GetTaskAtTime(time.Now())
 	if t1 == nil {
-		t.Fatalf("Wanted \"Task 1\", got nil,")
+		t.Fatalf("Wanted \"Task 1\", got nil")
 	}
 	if t1.Description != "Task 1" {
 		t.Fatalf("Wanted \"Task 1\", got: %s\n", t1.Description)
@@ -76,7 +84,7 @@ func TestGetTaskAtTime(t *testing.T) {
 func TestIsConflict(t *testing.T) {
 	test1 := validList.IsConflict(task2_5)
 	if !test1 {
-		t.Fatalf("Wanted true, got: false")
+		t.Fatalf("Wanted true, got false")
 	}
 
 	test2 := validList.IsConflict(task5)

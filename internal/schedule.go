@@ -150,8 +150,6 @@ func (s *Schedule) UpdateCurrentTask() error {
 func (s *Schedule) RemoveTask(id int) error {
 	//TODO test
 	//TODO append to log
-	// id corresponds to index in Tasks queue
-	// fill void with break (and consolidate if break at either end)
 	if id < 0 || id >= len(s.Tasks) {
 		return IndexOutOfBoundsError{}
 	}
@@ -160,9 +158,30 @@ func (s *Schedule) RemoveTask(id int) error {
 		return InvalidScheduleError{"Can't remove a break (considered empty)."}
 	}
 
+	if id < len(s.Tasks)-1 && s.Tasks[len(s.Tasks)-1].IsBreak() {
+		if id > 0 && s.Tasks[id-1].IsBreak() {
+			s.Tasks[id+1].StartTime = s.Tasks[id-1].StartTime
+			s.Tasks = append(s.Tasks[:id-1], s.Tasks[id+1:]...)
+			return nil
+		} else {
+			s.Tasks[id+1].StartTime = s.Tasks[id].StartTime
+		}
+	}
+	if id > 0 && s.Tasks[id-1].IsBreak() {
+		s.Tasks[id-1].EndTime = s.Tasks[id].EndTime
+		s.Tasks = append(s.Tasks[:id], s.Tasks[id+1:]...)
+		return nil
+	}
+
 	if id == len(s.Tasks)-1 {
 		s.Tasks = s.Tasks[:id]
 		return nil
+	} else if id == 0 {
+		if len(s.Tasks) > 1 {
+			s.Tasks = s.Tasks[1:]
+		} else {
+			s.Tasks = TaskList{}
+		}
 	}
 
 	s.Tasks = append(s.Tasks[:id], s.Tasks[id+1:]...)
@@ -203,9 +222,8 @@ func NewSchedule(taskList TaskList) Schedule {
 	}
 }
 
-// BuildFromFile creates a schedule from a csv file with filename schedule.csv
+// BuildFromFile creates a schedule from a csv file with the given name
 func BuildFromFile(fileName string) (*Schedule, error) {
-	// TODO test
 	// TODO log?
 	f, err := os.Open(fileName)
 	if err != nil {
@@ -219,7 +237,11 @@ func BuildFromFile(fileName string) (*Schedule, error) {
 	var end time.Time
 	var tag string
 
-	for line, err := r.Read(); err == nil; line, err = r.Read() {
+	line, err := r.Read()
+	for err != io.EOF {
+		if err != nil {
+			return nil, fmt.Errorf("BuildFromFile: %w", err)
+		}
 		lc++
 		if len(line) < 3 {
 			return nil,
@@ -234,12 +256,21 @@ func BuildFromFile(fileName string) (*Schedule, error) {
 		if err != nil {
 			return nil, errors.New("BuildFromFile: time value improperly formatted on line " + strconv.Itoa(lc))
 		}
-		if len(line) == 4 {
-			tag = line[3]
+		tag = strings.TrimSpace(line[3])
+		var task Task
+		if len(tag) > 0 {
+			task = NewTask(desc, start, end).WithTag(tag)
+		} else {
+			task = NewTask(desc, start, end)
 		}
-
-		task := NewTask(desc, start, end).WithTag(tag)
+		if task.IsEmpty() {
+			return nil, errors.New("BuildFromFile: Task could not be created on line " + strconv.Itoa(lc))
+		}
 		taskList = append(taskList, task)
+		line, err = r.Read()
+		if err != nil && err != io.EOF {
+			return nil, fmt.Errorf("BuildFromFile: %w", err)
+		}
 	}
 	if err != nil && err != io.EOF {
 		return nil, fmt.Errorf("BuildFromFile: %w", err)
