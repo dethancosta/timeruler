@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 	"time"
@@ -12,28 +13,6 @@ type TaskList []*Task
 // time block that contains the given time. It
 // returns nil if there is no task at time t.
 func (tl TaskList) GetTaskAtTime(t time.Time) (*Task, int) {
-	/* TODO delete 
-	lo := 0
-	hi := len(tl) - 1
-	mid := (hi + lo) / 2
-
-	for lo <= hi {
-
-		if t.After(tl[mid].EndTime) {
-			lo = mid + 1
-			mid = (lo + hi) / 2
-			continue
-		}
-
-		if t.Before(tl[mid].StartTime) {
-			hi = mid - 1
-			mid = (lo + hi) / 2
-			continue
-		}
-
-		return tl[mid], mid
-	}
-	*/
 	for i := range tl {
 		if tl[i].StartTime.Compare(t) <= 0 && tl[i].EndTime.Compare(t) > 0 {
 			return tl[i], i
@@ -72,14 +51,22 @@ func NewTaskList(tasks ...Task) (TaskList, error) {
 	}
 
 	tl := TaskList{}
+	var taskRef *Task
 	for t := 0; t < len(tasks); t++ {
-		tl = append(tl, &tasks[t])
+		taskRef = &tasks[t]
+		err := taskRef.Quantize()
+		if err != nil {
+			return nil, fmt.Errorf("Error quantizing task: %v", err)
+		}
+		tl = append(tl, taskRef)
 	}
 
 	tl.sort()
 	if !tl.IsConsistent() {
 		return nil, InvalidScheduleError{"List of tasks contains a conflict."}
 	}
+
+	// Add breaks as needed
 	var former time.Time
 	var latter time.Time
 	for i := 0; i < len(tl)-1; i++ {
@@ -98,6 +85,7 @@ func NewTaskList(tasks ...Task) (TaskList, error) {
 // tasks, and false otherwise. It assumes that the TaskList is
 // sorted.
 func (tl TaskList) IsConsistent() bool {
+	// TODO: fix!! should not return false if endtime==starttime
 	for i := 0; i < len(tl)-1; i++ {
 		if tl[i].EndTime.After(tl[i+1].StartTime) {
 			return false

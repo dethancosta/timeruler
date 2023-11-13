@@ -98,21 +98,16 @@ func (s *Schedule) AddTask(t Task) error {
 // tasks as needed. It returns an error if the update
 // could not be completed.
 func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
-	// TODO test
-	// TODO append to log
 	for _, t := range tasks {
 		if !t.IsValid() {
 			return InvalidTimeError{"One or more tasks has an invalid time."}
 		}
-		if t.StartTime.Before(time.Now()) {
-			return InvalidTimeError{"Task cannot start before the current time."}
-		}
 		todayY, todayM, todayD := time.Now().Date()
 		if y, m, d := t.StartTime.Date(); y != todayY || m != todayM || d != todayD {
-			return InvalidTimeError{"Task cannot start before the current day."}
+			return InvalidTimeError{"Task must start during the current day."}
 		}
 		if y, m, d := t.EndTime.Date(); y != todayY || m != todayM || d != todayD {
-			return InvalidTimeError{"Task cannot end after the current day."}
+			return InvalidTimeError{"Task must end during the current day."}
 		}
 
 		conflictBlock := s.GetTasksWithin(t.StartTime, t.EndTime)
@@ -137,7 +132,6 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 // Note that the task will be nil if there is no currently
 // scheduled task.
 func (s *Schedule) UpdateCurrentTask() error {
-	// TODO test
 	// For use with timer or change/request from client
 	s.CurrentTask, s.CurrentID = s.Tasks.GetTaskAtTime(time.Now())
 
@@ -149,7 +143,6 @@ func (s *Schedule) UpdateCurrentTask() error {
 // task could otherwise not be removed.
 func (s *Schedule) RemoveTask(id int) error {
 	//TODO test
-	//TODO append to log
 	if id < 0 || id >= len(s.Tasks) {
 		return IndexOutOfBoundsError{}
 	}
@@ -158,7 +151,7 @@ func (s *Schedule) RemoveTask(id int) error {
 		return InvalidScheduleError{"Can't remove a break (considered empty)."}
 	}
 
-	if id < len(s.Tasks)-1 && s.Tasks[len(s.Tasks)-1].IsBreak() {
+	if id < len(s.Tasks)-1 && s.Tasks[id+1].IsBreak() {
 		if id > 0 && s.Tasks[id-1].IsBreak() {
 			s.Tasks[id+1].StartTime = s.Tasks[id-1].StartTime
 			s.Tasks = append(s.Tasks[:id-1], s.Tasks[id+1:]...)
@@ -166,8 +159,7 @@ func (s *Schedule) RemoveTask(id int) error {
 		} else {
 			s.Tasks[id+1].StartTime = s.Tasks[id].StartTime
 		}
-	}
-	if id > 0 && s.Tasks[id-1].IsBreak() {
+	} else if id > 0 && s.Tasks[id-1].IsBreak() {
 		s.Tasks[id-1].EndTime = s.Tasks[id].EndTime
 		s.Tasks = append(s.Tasks[:id], s.Tasks[id+1:]...)
 		return nil
@@ -263,6 +255,10 @@ func BuildFromFile(fileName string) (*Schedule, error) {
 		} else {
 			task = NewTask(desc, start, end)
 		}
+		// Set task times to the current day (for now)
+		now := time.Now()
+		task.StartTime.AddDate(now.Year(), int(now.Month()), now.Day())
+		task.EndTime.AddDate(now.Year(), int(now.Month()), now.Day())
 		if task.IsEmpty() {
 			return nil, errors.New("BuildFromFile: Task could not be created on line " + strconv.Itoa(lc))
 		}
