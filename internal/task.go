@@ -140,5 +140,5 @@ func (t *Task) Quantize() error {
 func (t Task) IsEmpty() bool {
 	return t.StartTime.IsZero() &&
 		t.EndTime.IsZero() &&
-		t.Description == ""
+		strings.TrimSpace(t.Description) == ""
 }

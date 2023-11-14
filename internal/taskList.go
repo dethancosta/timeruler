@@ -10,11 +10,11 @@ import (
 type TaskList []*Task
 
 // GetTaskAtTime returns the task occupying the
-// time block that contains the given time. It
-// returns nil if there is no task at time t.
+// time block that contains the given time. 
+// (nil, -1) is returned if there is no task at time t.
 func (tl TaskList) GetTaskAtTime(t time.Time) (*Task, int) {
 	for i := range tl {
-		if tl[i].StartTime.Compare(t) <= 0 && tl[i].EndTime.Compare(t) > 0 {
+		if tl[i].StartTime.Compare(t) <= 0 && tl[i].EndTime.Compare(t) >= 0 {
 			return tl[i], i
 		}
 	}

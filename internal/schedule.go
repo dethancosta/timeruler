@@ -117,9 +117,16 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 		}
 		_, n := s.Tasks.GetTaskAtTime(t.StartTime)
 		_, m := s.Tasks.GetTaskAtTime(t.EndTime)
-		// TODO check that n and m are not -1 (that times are found)
-		// TODO check if n is 0, and if m is len(...)-1
-		s.Tasks = append(s.Tasks[:n], append(conflictBlock, s.Tasks[m+1:]...)...)
+
+		if n == -1 || m == -1 {
+			return InvalidScheduleError{"Invalid time block."}
+		}
+		if m == len(s.Tasks)-1 {
+			s.Tasks = append(s.Tasks[:n], newBlocks...)
+		} else {
+			//s.Tasks = append(s.Tasks[:n], append(conflictBlock, s.Tasks[m+1:]...)...)
+			s.Tasks = append(s.Tasks[:n], append(newBlocks, s.Tasks[m+1:]...)...)
+		}
 		s.Tasks = append(s.Tasks, &t)
 		s.Tasks.sort()
 		s.FixBreaks()
@@ -130,7 +137,7 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 
 func (s *Schedule) FixBreaks() {
 	// TODO test
-	for i := range s.Tasks {
+	for i := 0; i < len(s.Tasks)-1; i++ {
 		if s.Tasks[i].IsBreak() && s.Tasks[i+1].IsBreak() {
 			s.Tasks[i+1].StartTime = s.Tasks[i].StartTime
 			s.Tasks = append(s.Tasks[:i], s.Tasks[i+1:]...)

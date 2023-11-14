@@ -217,10 +217,13 @@ func TestUpdateTimeBlock(t *testing.T) {
 	}
 
 	nTask = NewTask("Nap Again", sched.Tasks[1].StartTime.Add(1*time.Hour), sched.Tasks[1].EndTime.Add(-1*time.Hour)) 
+	if nTask.IsEmpty() {
+		t.Fatalf("Task should not be empty")
+	}
 
 	err = sched.UpdateTimeBlock(nTask)
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf(err.Error() + "\n" + nTask.String())
 	}
 	expected = `
 	[09:00:00-09:15:00] Nap ()
