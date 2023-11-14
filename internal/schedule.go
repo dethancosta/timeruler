@@ -117,13 +117,28 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 		}
 		_, n := s.Tasks.GetTaskAtTime(t.StartTime)
 		_, m := s.Tasks.GetTaskAtTime(t.EndTime)
+		// TODO check that n and m are not -1 (that times are found)
 		// TODO check if n is 0, and if m is len(...)-1
-		s.Tasks = append(s.Tasks[:n-1], append(conflictBlock, s.Tasks[m+1:]...)...)
+		s.Tasks = append(s.Tasks[:n], append(conflictBlock, s.Tasks[m+1:]...)...)
 		s.Tasks = append(s.Tasks, &t)
 		s.Tasks.sort()
+		s.FixBreaks()
 	}
 
 	return nil
+}
+
+func (s *Schedule) FixBreaks() {
+	// TODO test
+	for i := range s.Tasks {
+		if s.Tasks[i].IsBreak() && s.Tasks[i+1].IsBreak() {
+			s.Tasks[i+1].StartTime = s.Tasks[i].StartTime
+			s.Tasks = append(s.Tasks[:i], s.Tasks[i+1:]...)
+		} else if !s.Tasks[i].EndTime.Equal(s.Tasks[i+1].StartTime) {
+			b := Break(s.Tasks[i].EndTime, s.Tasks[i+1].StartTime)
+			s.Tasks = append(s.Tasks[:i+1], append([]*Task{&b}, s.Tasks[i+1:]...)...)
+		}
+	}
 }
 
 // UpdateCurrentTask checks the schedule's task list for the

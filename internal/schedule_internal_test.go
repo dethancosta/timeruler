@@ -189,7 +189,6 @@ func TestUpdateCurrentTask(t *testing.T) {
 }
 
 func TestUpdateTimeBlock(t *testing.T) {
-	/*
 	sched, err := BuildFromFile("./test_data/meals_w_breaks.csv")
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -200,9 +199,7 @@ func TestUpdateTimeBlock(t *testing.T) {
 		sched.Tasks[i].EndTime = sched.Tasks[i].EndTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
 	}
 	nTask := NewTask("Nap", sched.Tasks[0].StartTime, sched.Tasks[0].EndTime)
-	err = sched.UpdateTimeBlock(
-		nTask,
-	) 
+	err = sched.UpdateTimeBlock(nTask) 
 	if err != nil {
 		t.Fatalf(err.Error() + "\n" + nTask.String())
 	}
@@ -218,8 +215,28 @@ func TestUpdateTimeBlock(t *testing.T) {
 	if strings.Join(strings.Fields(expected), "") != got {
 		t.Fatalf("Expected: %s\n Got: %s", expected, sched.String())
 	}
-	// TODO add more tests (subset of exisitng time, straddling 2, incorrect, etc.)
-	*/
+
+	nTask = NewTask("Nap Again", sched.Tasks[1].StartTime.Add(1*time.Hour), sched.Tasks[1].EndTime.Add(-1*time.Hour)) 
+
+	err = sched.UpdateTimeBlock(nTask)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	expected = `
+	[09:00:00-09:15:00] Nap ()
+	[09:15:00-10:15:00] Take a break (break)
+	[10:15:00-11:15:00] Nap Again ()
+	[11:15:00-12:15:00] Take a break (break)
+	[12:15:00-12:45:00] Eat Lunch (food)
+	[12:45:00-17:00:00] Take a break (break)
+	[17:00:00-18:00:00] Eat Dinner (food)
+	[18:00:00-23:30:00] Take a break (break)
+	[23:30:00-23:45:00] Go To Sleep ()`
+	got = strings.Join(strings.Fields(sched.String()), "")
+	if strings.Join(strings.Fields(expected), "") != got {
+		t.Fatalf("Expected: %s\n Got: %s", expected, sched.String())
+	}
+	// TODO add more tests (subset of exisitng time, straddling 2, incorrect, 2 new tasks, etc.)
 }
 
 func TestAddTask(t *testing.T) {
