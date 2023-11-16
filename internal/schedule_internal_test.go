@@ -188,6 +188,59 @@ func TestUpdateCurrentTask(t *testing.T) {
 	}
 }
 
+func TestGetTasksWithin(t *testing.T) {
+	sched, err := BuildFromFile("./test_data/meals_w_breaks.csv")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	now := time.Now()
+	for i := range sched.Tasks {
+		sched.Tasks[i].StartTime = sched.Tasks[i].StartTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
+		sched.Tasks[i].EndTime = sched.Tasks[i].EndTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
+	}
+	expected := `
+	[09:00:00-09:15:00] Eat Breakfast (food)
+	[09:15:00-12:15:00] Take a break (break)
+	[12:15:00-12:45:00] Eat Lunch (food)
+	[12:45:00-17:00:00] Take a break (break)
+	[17:00:00-18:00:00] Eat Dinner (food)
+	[18:00:00-23:30:00] Take a break (break)
+	[23:30:00-23:45:00] Go To Sleep ()`
+	got := strings.Join(strings.Fields(sched.String()), "")
+	if strings.Join(strings.Fields(expected), "") != got {
+		t.Fatalf("Expected: %s\n Got: %s", expected, sched.String())
+	}
+	set := sched.GetTasksWithin(
+		sched.Tasks[0].StartTime.Add(1*time.Minute),
+		sched.Tasks[0].EndTime.Add(-1*time.Minute),
+	)
+	if len(set) != 1 {
+		t.Fatalf("Expected 1 task, got %d", len(set))
+	}
+	set = sched.GetTasksWithin(
+		sched.Tasks[1].StartTime.Add(1*time.Hour),
+		sched.Tasks[1].EndTime.Add(-1*time.Hour),
+	)
+	if len(set) != 1 {
+		t.Fatalf("Expected 1 task, got %d", len(set))
+	}
+	set = sched.GetTasksWithin(
+		sched.Tasks[2].StartTime.Add(1*time.Minute),
+		sched.Tasks[4].StartTime.Add(-1*time.Minute),
+	)
+	if len(set) != 2 {
+		t.Fatalf("Expected 2 tasks, got %d\n%s", len(set), TaskList(set).String())
+	}
+	set = sched.GetTasksWithin(
+		sched.Tasks[6].StartTime,
+		sched.Tasks[6].EndTime.Add(10*time.Minute),
+	)
+	if len(set) != 1 {
+		t.Fatalf("Expected 1 task, got %d \n%s", len(set), TaskList(set).String())
+	}
+	// TODO add more tests?
+}
+
 func TestUpdateTimeBlock(t *testing.T) {
 	sched, err := BuildFromFile("./test_data/meals_w_breaks.csv")
 	if err != nil {
@@ -223,7 +276,7 @@ func TestUpdateTimeBlock(t *testing.T) {
 
 	err = sched.UpdateTimeBlock(nTask)
 	if err != nil {
-		t.Fatalf(err.Error() + "\n" + nTask.String())
+		t.Fatalf(err.Error() + "\n" + nTask.String() + "\n\n" + sched.String())
 	}
 	expected = `
 	[09:00:00-09:15:00] Nap ()
@@ -250,6 +303,3 @@ func TestChangeCurrentTaskUntil(t *testing.T) {
 	// TODO implement
 }
 
-func TestGetTasksWithin(t *testing.T) {
-	// TODO implement
-}

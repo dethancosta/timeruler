@@ -95,12 +95,12 @@ func (t Task) Conflicts(other Task) bool {
 // newTask's time is a subset of oldTask's, 2 Tasks
 // will be returned. It assumes the tasks have a conflict,
 // so oldTask may be incorrectly updated if there is none.
-func Resolve(oldTask, newTask *Task) []*Task {
+func Resolve(oldTask, newTask Task) []*Task {
 	// TODO test
 	if oldTask.StartTime.Before(newTask.StartTime) {
 		if oldTask.EndTime.Compare(newTask.EndTime) <= 0 {
 			oldTask.EndTime = newTask.StartTime
-			return []*Task{oldTask}
+			return []*Task{&oldTask}
 		}
 		postTask := &Task{
 			Description: oldTask.Description,
@@ -109,14 +109,14 @@ func Resolve(oldTask, newTask *Task) []*Task {
 			Tag:         oldTask.Tag,
 		}
 		oldTask.EndTime = newTask.StartTime
-		return []*Task{oldTask, postTask}
+		return []*Task{&oldTask, postTask}
 	} else {
 		if oldTask.EndTime.Compare(newTask.EndTime) <= 0 {
 			// oldTask will be removed
 			return nil
 		} else {
 			oldTask.StartTime = newTask.EndTime
-			return []*Task{oldTask}
+			return []*Task{&oldTask}
 		}
 	}
 }

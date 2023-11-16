@@ -18,10 +18,21 @@ type Schedule struct {
 }
 
 // GertTasksWithin returns all tasks that occur within a given time frame
-func (s *Schedule) GetTasksWithin(after time.Time, before time.Time) []*Task {
-	_, before_idx := s.Tasks.GetTaskAtTime(after)
-	_, after_idx := s.Tasks.GetTaskAtTime(before)
-	return s.Tasks[after_idx : before_idx+1]
+func (s *Schedule) GetTasksWithin(before time.Time, after time.Time) []*Task {
+	endTime := s.Tasks[len(s.Tasks)-1].EndTime
+	startTime := s.Tasks[0].StartTime
+	_, before_idx := s.Tasks.GetTaskAtTime(before.Add(1 * time.Minute))
+	_, after_idx := s.Tasks.GetTaskAtTime(after)
+	if after.Compare(endTime) >= 0 {
+		after_idx = len(s.Tasks) - 1
+	}
+	if before.Compare(startTime) <= 0 {
+		before_idx = 0
+	}
+	if before_idx == -1 || after_idx == -1 {
+		return nil
+	}
+	return s.Tasks[before_idx:after_idx+1]
 }
 
 // ChangeCurrentTaskUntil updates the schedule's current task
@@ -111,9 +122,12 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 		}
 
 		conflictBlock := s.GetTasksWithin(t.StartTime, t.EndTime)
+		if conflictBlock == nil {
+			return InvalidScheduleError{"Invalid time block."}
+		}
 		var newBlocks []*Task
 		for i := range conflictBlock {
-			newBlocks = append(newBlocks, Resolve(conflictBlock[i], &t)...)
+			newBlocks = append(newBlocks, Resolve(*conflictBlock[i], t)...)
 		}
 		_, n := s.Tasks.GetTaskAtTime(t.StartTime)
 		_, m := s.Tasks.GetTaskAtTime(t.EndTime)

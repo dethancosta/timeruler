@@ -106,7 +106,7 @@ func (tl TaskList) ResolveConflicts(oldTaskId int, newTask *Task) (TaskList, err
 	for oldTaskId < len(tl) && oldTask.Conflicts(*newTask) {
 		oldTask = tl.get(oldTaskId)
 
-		updated := Resolve(oldTask, newTask)
+		updated := Resolve(*oldTask, *newTask)
 		if oldTaskId < len(tl)-1 {
 			post := tl[oldTaskId+1:]
 			tl = append(tl[:oldTaskId], updated...)
