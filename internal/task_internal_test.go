@@ -48,7 +48,7 @@ func TestWithTag(t *testing.T) {
 
 func TestBreak(t *testing.T) {
 	bTask := Break(time.Now(), time.Now().Add(5*time.Minute))
-	if bTask.Description != "Take a break" {
+	if bTask.Description != "Break" {
 		t.Fatalf("break incorrect description. Wanted \"Take a break\", got: %s", bTask.Description)
 	}
 	if bTask.Tag != "break" {

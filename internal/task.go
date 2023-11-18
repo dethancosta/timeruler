@@ -45,7 +45,7 @@ func (t Task) WithTag(tag string) Task {
 // as "free time" in a schedule.
 func Break(start, end time.Time) Task {
 	b := NewTask(
-		"Take a break",
+		"Break",
 		start,
 		end,
 	).WithTag(BreakTag)

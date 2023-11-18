@@ -60,9 +60,6 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 		}
 
 		s.Tasks = append(s.Tasks[:idx+1], append([]*Task{&newCurrent}, s.Tasks[idx+1:]...)...)
-
-		//s.Tasks = append(s.Tasks, newCurrent)
-		//s.Tasks.sort()
 	} else {
 		_, idx := s.Tasks.GetTaskAtTime(time.Now())
 		newList, err := s.Tasks.ResolveConflicts(idx, &newCurrent)
@@ -85,11 +82,6 @@ func (s *Schedule) GetCurrentTaskStr() string {
 // tasks are expected. It returns an error in the case of an
 // overlap/conflict or if the tasks could otherwise not be added
 func (s *Schedule) AddTask(t Task) error {
-	// TODO test
-	// TODO append to log
-	if t.StartTime.Before(time.Now()) {
-		return InvalidTimeError{"Task cannot start in the past."}
-	}
 	if !t.IsValid() {
 		return InvalidTimeError{"Task times are invalid."}
 	}
@@ -97,9 +89,13 @@ func (s *Schedule) AddTask(t Task) error {
 	if s.Tasks.IsConflict(t) {
 		return InvalidScheduleError{"Task conflicts with schedule."}
 	}
-	s.Tasks = append(s.Tasks, &t)
-	s.Tasks.sort()
-
+	// TODO if there is a break where new task goes, remove/update it
+	//_, idx := s.Tasks.GetTaskAtTime(t.StartTime)
+	//newTasks, err := s.Tasks.ResolveConflicts(idx, &t)
+	err := s.UpdateTimeBlock(t)
+	if err != nil {
+		return fmt.Errorf("AddTask: %w", err)
+	}
 	return nil
 }
 
@@ -138,7 +134,6 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 		if m == len(s.Tasks)-1 {
 			s.Tasks = append(s.Tasks[:n], newBlocks...)
 		} else {
-			//s.Tasks = append(s.Tasks[:n], append(conflictBlock, s.Tasks[m+1:]...)...)
 			s.Tasks = append(s.Tasks[:n], append(newBlocks, s.Tasks[m+1:]...)...)
 		}
 		s.Tasks = append(s.Tasks, &t)

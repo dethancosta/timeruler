@@ -94,7 +94,7 @@ func (tl TaskList) IsConsistent() bool {
 	return true
 }
 
-// ResolveConflict adjusts the start and end times of the tasks starting at
+// ResolveConflicts adjusts the start and end times of the tasks starting at
 // the given index to accomodate the new given task. It updates a copy of
 // the task list and returns the updated copy.
 func (tl TaskList) ResolveConflicts(oldTaskId int, newTask *Task) (TaskList, error) {
@@ -104,7 +104,6 @@ func (tl TaskList) ResolveConflicts(oldTaskId int, newTask *Task) (TaskList, err
 	oldTask := tl.get(oldTaskId)
 
 	for oldTaskId < len(tl) && oldTask.Conflicts(*newTask) {
-		oldTask = tl.get(oldTaskId)
 
 		updated := Resolve(*oldTask, *newTask)
 		if oldTaskId < len(tl)-1 {
@@ -116,6 +115,7 @@ func (tl TaskList) ResolveConflicts(oldTaskId int, newTask *Task) (TaskList, err
 		}
 
 		oldTaskId++
+		oldTask = tl.get(oldTaskId)
 	}
 
 	tl = append(tl, newTask)
