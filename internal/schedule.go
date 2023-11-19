@@ -118,35 +118,31 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 			return InvalidTimeError{"Task must end during the current day."}
 		}
 
-		conflictBlock := s.GetTasksWithin(t.StartTime, t.EndTime)
-		if conflictBlock == nil {
-			return InvalidScheduleError{"Invalid time block."}
+		newTasks, err := NewTaskList() 
+		if err != nil {
+			return fmt.Errorf("UpdateTimeBlock: %w", err)
 		}
-		var newBlocks []*Task
-		for i := range conflictBlock {
-			newBlocks = append(newBlocks, Resolve(*conflictBlock[i], t)...)
+		for i := range s.Tasks {
+			if s.Tasks[i].EndTime.Before(t.StartTime) {
+				newTasks = append(newTasks, s.Tasks[i])
+			} else if s.Tasks[i].StartTime.After(t.EndTime) {
+				newTasks = append(newTasks, &t)
+				newTasks = append(newTasks, s.Tasks[i:]...)
+				break 
+			} else {
+				if s.Tasks[i].StartTime.Before(t.StartTime) {
+					nt := NewTask(s.Tasks[i].Description, s.Tasks[i].StartTime, t.StartTime).WithTag(s.Tasks[i].Tag)
+					newTasks = append(newTasks, &nt)
+				}
+				if s.Tasks[i].EndTime.After(t.EndTime) {
+					nt := NewTask(s.Tasks[i].Description, t.EndTime, s.Tasks[i].EndTime).WithTag(s.Tasks[i].Tag)
+					newTasks = append(newTasks, &nt)
+				}
+			}
 		}
-		_, n := s.Tasks.GetTaskAtTime(t.StartTime)
-		_, m := s.Tasks.GetTaskAtTime(t.EndTime)
-
-		if n == -1 || m == -1 {
-			return InvalidScheduleError{"Invalid time block."}
-		}
-		var pre TaskList
-		for i := 0; i < n; i++ {
-			pre = append(pre, s.Tasks[i])
-		}
-		var post TaskList
-		for i := m + 1; i < len(s.Tasks); i++ {
-			post = append(post, s.Tasks[i])
-		}
-		if m == len(s.Tasks)-1 {
-			s.Tasks = append(pre, newBlocks...)
-		} else {
-			s.Tasks = append(pre, append(newBlocks, post...)...)
-		}
-		s.Tasks = append(s.Tasks, &t)
-		s.Tasks.sort()
+		
+		newTasks.sort()
+		s.Tasks = newTasks
 		s.FixBreaks()
 	}
 

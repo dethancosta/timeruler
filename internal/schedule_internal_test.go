@@ -353,3 +353,10 @@ func TestChangeCurrentTaskUntil(t *testing.T) {
 	// TODO implement
 }
 
+func TestFixBreaks(t *testing.T) {
+	// TODO implement
+}
+
+func TestNewSchedule(t *testing.T) {
+	// TODO implement
+}
