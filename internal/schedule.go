@@ -39,10 +39,12 @@ func (s *Schedule) GetTasksWithin(before time.Time, after time.Time) []*Task {
 // to have the given description, tag, and end time. It is not
 // assumed that there will not be a conflict.
 func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error {
-	// TODO test
-	// TODO append to log
-	if end.Compare(time.Now()) <= 1 {
+	if end.Compare(time.Now()) <= 0 {
 		return InvalidTimeError{"Task ends before the current time."}
+	}
+	now := time.Now()
+	if end.Day() != now.Day() || end.Month() != now.Month() || end.Year() != now.Year() {
+		return InvalidTimeError{"Task must end during the current day."}
 	}
 
 	newCurrent := NewTask(desc, time.Now(), end).WithTag(tag)
@@ -170,49 +172,10 @@ func (s *Schedule) FixBreaks() {
 func (s *Schedule) UpdateCurrentTask() error {
 	// For use with timer or change/request from client
 	s.CurrentTask, s.CurrentID = s.Tasks.GetTaskAtTime(time.Now())
-
-	return nil
-}
-
-// RemoveTask removes the ith task in the task list.
-// It returns an error if the id is invalid or the
-// task could otherwise not be removed.
-func (s *Schedule) RemoveTask(id int) error {
-	//TODO test
-	if id < 0 || id >= len(s.Tasks) {
-		return IndexOutOfBoundsError{}
+	if s.CurrentID == -1 {
+		return InvalidScheduleError{}
 	}
 
-	if s.Tasks[id].IsBreak() {
-		return InvalidScheduleError{"Can't remove a break (considered empty)."}
-	}
-
-	if id < len(s.Tasks)-1 && s.Tasks[id+1].IsBreak() {
-		if id > 0 && s.Tasks[id-1].IsBreak() {
-			s.Tasks[id+1].StartTime = s.Tasks[id-1].StartTime
-			s.Tasks = append(s.Tasks[:id-1], s.Tasks[id+1:]...)
-			return nil
-		} else {
-			s.Tasks[id+1].StartTime = s.Tasks[id].StartTime
-		}
-	} else if id > 0 && s.Tasks[id-1].IsBreak() {
-		s.Tasks[id-1].EndTime = s.Tasks[id].EndTime
-		s.Tasks = append(s.Tasks[:id], s.Tasks[id+1:]...)
-		return nil
-	}
-
-	if id == len(s.Tasks)-1 {
-		s.Tasks = s.Tasks[:id]
-		return nil
-	} else if id == 0 {
-		if len(s.Tasks) > 1 {
-			s.Tasks = s.Tasks[1:]
-		} else {
-			s.Tasks = TaskList{}
-		}
-	}
-
-	s.Tasks = append(s.Tasks[:id], s.Tasks[id+1:]...)
 	return nil
 }
 

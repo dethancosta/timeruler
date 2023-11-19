@@ -18,7 +18,6 @@ func (tl TaskList) GetTaskAtTime(t time.Time) (*Task, int) {
 			return tl[i], i
 		}
 	}
-
 	return nil, -1
 }
 

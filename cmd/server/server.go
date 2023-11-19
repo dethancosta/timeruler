@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	tc "github.com/dethancosta/timecop/internal"
-	"github.com/gorilla/mux"
 )
 
 const (
@@ -25,57 +23,48 @@ type Server struct {
 }
 
 func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
+	// TODO test
 	// TODO authenticate
 	w.Write([]byte(s.Schedule.String()))
-}
-
-func (s *Server) UpdateSchedule(w http.ResponseWriter, r *http.Request) {
-	// TODO implement
 }
 
 func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
-	// TODO implement
-	err := tc.SendJson(s.Schedule.CurrentTask, w)
-
-	if err != nil {
-		// TODO append to AOF
-		log.Println(fmt.Errorf("GetCurrentTask: %w", err))
-		w.WriteHeader(http.StatusInternalServerError) // TODO send body with message
-	}
-}
-
-func (s *Server) RemoveTask(w http.ResponseWriter, r *http.Request) {
+	// TODO test
 	// TODO authenticate
-	taskId := mux.Vars(r)["taskId"]
-	if taskId == "" {
-		http.Error(w, "No Task Id given.", http.StatusBadRequest)
+	log.Printf("GetCurrentTask: %s", r.URL.Path) // TODO delete this line
+	current, idx := s.Schedule.Tasks.GetTaskAtTime(time.Now())
+	if current == nil {
+		http.Error(w, "No current task found.", http.StatusNotFound)
 		return
 	}
-
-	id, err := strconv.Atoi(taskId)
-	if err != nil {
-		log.Printf("RemoveTask: %s", err.Error())
-		http.Error(w, "Task Id must be a valid number", http.StatusBadRequest)
-		return
-	}
-
-	err = s.Schedule.RemoveTask(id)
-	if err != nil {
-		log.Printf("RemoveTask: %s", err.Error())
-		if errors.Is(err, tc.IndexOutOfBoundsError{}) {
-			http.Error(w, "Please give a valid index", http.StatusBadRequest)
-		} else if errors.Is(err, tc.InvalidScheduleError{}) {
-			http.Error(w, "Operation not allowed on this schedule", http.StatusBadRequest)
-		} else {
+	if idx != s.Schedule.CurrentID {
+		err := s.Schedule.UpdateCurrentTask()
+		if err != nil {
+			log.Printf("GetCurrentTask: %s", err.Error())
 			http.Error(w, "Encountered an internal server error.", http.StatusInternalServerError)
+			return
 		}
+	}
+	msg, err := json.Marshal(struct{
+		Description string `json:"Description"`
+		Tag string `json:"Tag"`
+		Until string `json:"Until"`
+	}{
+		Description: current.Description,
+		Tag: current.Tag,
+		Until: current.EndTime.Format(time.TimeOnly),
+	})
+	if err != nil {
+		log.Printf("GetCurrentTask: %s", err.Error())
+		http.Error(w, "Encountered an internal server error.", http.StatusInternalServerError)
 		return
 	}
-	w.Write([]byte(s.Schedule.String()))
+	w.Write(msg)
 }
 
 func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
-	// TODO implement
+	// TODO test
+	// TODO authenticate
 	var taskModel struct{
 		Description string `json:"Description"`
 		Tag string `json:"Tag"`

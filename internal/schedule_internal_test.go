@@ -53,6 +53,7 @@ func TestGetCurrentTask(t *testing.T) {
 	if s2.GetCurrentTaskStr() != expectedBreak.String() {
 		t.Fatalf("Expected: %s, Got: %s", expectedBreak.String(), s2.GetCurrentTaskStr())
 	}
+	// TODO add more tests 
 }
 
 func TestBuildFromFile(t *testing.T) {
@@ -111,55 +112,6 @@ func TestBuildFromFile(t *testing.T) {
 	got = strings.Join(strings.Fields(quantizedTwo.String()), "")
 	if expected != got {
 		t.Fatalf("Expected: %s\n Got: %s", expected, quantizedTwo.String())
-	}
-}
-
-func TestRemoveTask(t *testing.T) {
-	quantizedOne, err := BuildFromFile("./test_data/quantize_test1.csv")
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	err = quantizedOne.RemoveTask(-1)
-	if err == nil {
-		t.Fatalf("Expected error when removing task at negative index")
-	}
-	err = quantizedOne.RemoveTask(len(quantizedOne.Tasks))
-	if err == nil {
-		t.Fatalf("Expected error when removing task at index equal to length")
-	}
-	err = quantizedOne.RemoveTask(0)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	expected := strings.Join(strings.Fields(
-		`[12:15:00-12:45:00] Eat Lunch (food)
-		[12:45:00-17:00:00] Break (break)
-		[17:00:00-18:05:00] Eat Dinner (food)
-		[18:05:00-23:30:00] Break (break)
-		[23:30:00-23:45:00] Go To Sleep ()`,
-	), "")
-	got := strings.Join(strings.Fields(quantizedOne.String()), "")
-	if expected != got {
-		t.Fatalf("Expected: %s\n Got: %s", expected, quantizedOne.String())
-	}
-
-	err = quantizedOne.RemoveTask(2)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-	expected = strings.Join(strings.Fields(
-		`[12:15:00-12:45:00] Eat Lunch (food)
-		[12:45:00-23:30:00] Break (break)
-		[23:30:00-23:45:00] Go To Sleep ()`,
-	), "")
-	got = strings.Join(strings.Fields(quantizedOne.String()), "")
-	if expected != got {
-		t.Fatalf("Expected: %s\n Got: %s", expected, quantizedOne.String())
-	}
-
-	err = quantizedOne.RemoveTask(1)
-	if err == nil {
-		t.Fatalf("Expected error when removing break")
 	}
 }
 
@@ -350,7 +302,27 @@ func TestAddTask(t *testing.T) {
 }
 
 func TestChangeCurrentTaskUntil(t *testing.T) {
-	// TODO implement
+	sched, err := BuildFromFile("./test_data/meals_w_breaks.csv")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	now := time.Now()
+	for i := range sched.Tasks {
+		sched.Tasks[i].StartTime = sched.Tasks[i].StartTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
+		sched.Tasks[i].EndTime = sched.Tasks[i].EndTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
+	}
+	err = sched.ChangeCurrentTaskUntil("Nap", "", now.Add(1*time.Hour))
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	err = sched.ChangeCurrentTaskUntil("Nap", "", now.Add(-1*time.Hour))
+	if err == nil {
+		t.Fatalf("Expected error when changing current task to before start time")
+	}
+	err = sched.ChangeCurrentTaskUntil("Nap", "", now.Add(24*time.Hour))
+	if err == nil {
+		t.Fatalf("Expected error when setting end time to another day")
+	}
 }
 
 func TestFixBreaks(t *testing.T) {
