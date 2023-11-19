@@ -62,7 +62,7 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 		s.Tasks = append(s.Tasks[:idx+1], append([]*Task{&newCurrent}, s.Tasks[idx+1:]...)...)
 	} else {
 		_, idx := s.Tasks.GetTaskAtTime(time.Now())
-		newList, err := s.Tasks.ResolveConflicts(idx, &newCurrent)
+		newList, err := s.Tasks.ResolveConflicts(idx, newCurrent)
 		if err != nil {
 			return err
 		}
@@ -89,13 +89,14 @@ func (s *Schedule) AddTask(t Task) error {
 	if s.Tasks.IsConflict(t) {
 		return InvalidScheduleError{"Task conflicts with schedule."}
 	}
-	// TODO if there is a break where new task goes, remove/update it
 	//_, idx := s.Tasks.GetTaskAtTime(t.StartTime)
-	//newTasks, err := s.Tasks.ResolveConflicts(idx, &t)
+	//newTasks, err := s.Tasks.ResolveConflicts(idx, t)
 	err := s.UpdateTimeBlock(t)
 	if err != nil {
 		return fmt.Errorf("AddTask: %w", err)
 	}
+	//s.Tasks = newTasks
+
 	return nil
 }
 
@@ -131,10 +132,18 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 		if n == -1 || m == -1 {
 			return InvalidScheduleError{"Invalid time block."}
 		}
+		var pre TaskList
+		for i := 0; i < n; i++ {
+			pre = append(pre, s.Tasks[i])
+		}
+		var post TaskList
+		for i := m + 1; i < len(s.Tasks); i++ {
+			post = append(post, s.Tasks[i])
+		}
 		if m == len(s.Tasks)-1 {
-			s.Tasks = append(s.Tasks[:n], newBlocks...)
+			s.Tasks = append(pre, newBlocks...)
 		} else {
-			s.Tasks = append(s.Tasks[:n], append(newBlocks, s.Tasks[m+1:]...)...)
+			s.Tasks = append(pre, append(newBlocks, post...)...)
 		}
 		s.Tasks = append(s.Tasks, &t)
 		s.Tasks.sort()

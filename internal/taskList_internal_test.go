@@ -97,3 +97,36 @@ func TestIsConflict(t *testing.T) {
 		t.Fatalf("Wanted false, got true")
 	}
 }
+
+func TestResolveConflicts(t *testing.T) {
+	s, err := BuildFromFile("test_data/meals_w_breaks.csv")
+	if err != nil {
+		t.Fatalf("Couldn't build schedule: %s", err.Error())
+	}
+
+	tl := s.Tasks
+	nt := NewTask("Test", tl.get(1).StartTime, tl.get(1).EndTime)
+	tl2, err := tl.ResolveConflicts(1, nt)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	if len(tl2) != len(tl) {
+		t.Fatalf("Expected length: %d, Actual length: %d", len(tl), len(tl2))
+	}
+	nt2 := NewTask("test2", tl2.get(3).StartTime.Add(20*time.Minute), tl2.get(3).EndTime.Add(-20*time.Minute))
+
+	tl, err = tl2.ResolveConflicts(3, nt2)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	if len(tl) != len(tl2)+2 {
+		t.Fatalf("Expected length: %d, Actual length: %d", len(tl2)+2, len(tl))
+	}
+	if !(tl.get(3).Description == "Break" && 
+		tl.get(4).Description == "test2" &&
+		tl.get(5).Description == "Break" &&
+		tl.get(6).Description == "Eat Dinner") {
+		t.Fatalf("Expected: \"Break, test2, Break, Eat Dinner\", Actual: \"%s, %s, %s, %s\"\n%s\n%s",
+			tl.get(3).Description, tl.get(4).Description, tl.get(5).Description, tl.get(6).Description, tl2.String(), tl.String())
+	}
+}

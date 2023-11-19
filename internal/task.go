@@ -86,7 +86,7 @@ func (t Task) IsValid() bool {
 // with the receiver task's time span.
 func (t Task) Conflicts(other Task) bool {
 	// TODO test
-	return t.StartTime.Before(other.EndTime) && t.StartTime.Before(other.EndTime)
+	return t.StartTime.Before(other.EndTime) && other.StartTime.Before(t.EndTime)
 }
 
 // Resolve updates the time of the old task to remove overlap
@@ -96,7 +96,9 @@ func (t Task) Conflicts(other Task) bool {
 // will be returned. It assumes the tasks have a conflict,
 // so oldTask may be incorrectly updated if there is none.
 func Resolve(oldTask, newTask Task) []*Task {
-	// TODO test
+	if !oldTask.Conflicts(newTask) {
+		return []*Task{&oldTask}
+	}
 	if oldTask.StartTime.Before(newTask.StartTime) {
 		if oldTask.EndTime.Compare(newTask.EndTime) <= 0 {
 			oldTask.EndTime = newTask.StartTime

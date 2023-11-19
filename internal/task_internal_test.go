@@ -55,3 +55,43 @@ func TestBreak(t *testing.T) {
 		t.Fatalf("break incorrect tag. Wanted\"break\", got: %s", bTask.Tag)
 	}
 }
+
+func TestResolve(t *testing.T) {
+	task1 := NewTask("Task 1", time.Now(), time.Now().Add(5*time.Minute))
+	task2 := NewTask("Task 2", time.Now(), time.Now().Add(5*time.Minute))
+
+	tl := Resolve(task1, task2)
+	if tl != nil {
+		t.Fatalf("Wanted nil, got: %v", tl)
+	}
+
+	task3 := NewTask("Task 3", time.Now().Add(15*time.Minute), time.Now().Add(20*time.Minute))
+
+	tl = Resolve(task1, task3)
+	if len(tl) != 1 {
+		t.Fatalf("Wanted 1 task, got: %v", tl)
+	}
+	if tl[0].Description != "Task 1" && tl[0].StartTime != task1.StartTime && tl[0].EndTime != task1.EndTime {
+		t.Fatalf("Wanted \"Task 1\", got: %s", tl[0].Description)
+	}
+
+	task3 = NewTask("Task 3", time.Now().Add(-15*time.Minute), time.Now().Add(15*time.Minute))
+	task4 := NewTask("Task 4", time.Now().Add(-5*time.Minute), time.Now().Add(5*time.Minute))
+	tl = Resolve(task3, task4)
+	if len(tl) != 2 {
+		t.Fatalf("Wanted 3 tasks, got: %v", tl)
+	}
+	if tl[0].EndTime != task4.StartTime {
+		t.Fatalf("Wanted %v, got: %v", task4.StartTime, tl[0].EndTime)
+	}
+	if tl[1].StartTime != task4.EndTime {
+		t.Fatalf("Wanted %v, got: %v", task4.EndTime, tl[1].StartTime)
+	}
+
+	lastTask := NewTask("Last", task4.EndTime.Add(-5*time.Minute), task4.EndTime.Add(5*time.Minute))
+
+	tl = Resolve(task4, lastTask)
+	if len(tl) != 1 {
+		t.Fatalf("Wanted 1 task, got: %v", tl)
+	}
+}
