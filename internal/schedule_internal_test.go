@@ -68,7 +68,8 @@ func TestBuildFromFile(t *testing.T) {
 	[17:00:00-18:00:00] Eat Dinner (food)
 	[18:00:00-23:30:00] Break (break)
 	[23:30:00-23:45:00] Go To Sleep ()`
-	got := strings.Join(strings.Fields(mealsWithBreaks.String()), "")
+	got := strings.Replace(strings.Join(strings.Fields(mealsWithBreaks.String()), ""),
+		"->", "", -1)
 	expected = strings.Join(strings.Fields(expected), "")
 	if expected != got {
 		t.Fatalf("Expected: %s\n Got: %s", expected, mealsWithBreaks.String())
@@ -88,11 +89,12 @@ func TestBuildFromFile(t *testing.T) {
 		[09:15:00-12:15:00] Break (break)
 		[12:15:00-12:45:00] Eat Lunch (food)
 		[12:45:00-17:00:00] Break (break)
-		[17:00:00-18:05:00] Eat Dinner (food)
-		[18:05:00-23:30:00] Break (break)
+		[17:00:00-18:00:00] Eat Dinner (food)
+		[18:00:00-23:30:00] Break (break)
 		[23:30:00-23:45:00] Go To Sleep ()`,
 	), "")
-	got = strings.Join(strings.Fields(quantizedOne.String()), "")
+	got = strings.Replace(strings.Join(strings.Fields(quantizedOne.String()), ""),
+		"->", "", -1)
 	if expected != got {
 		t.Fatalf("Expected: %s\n Got: %s", expected, quantizedOne.String())
 	}
@@ -105,11 +107,12 @@ func TestBuildFromFile(t *testing.T) {
 		`[09:00:00-09:15:00] Eat Breakfast (food)
 		[09:15:00-12:45:00] Eat Lunch (food)
 		[12:45:00-17:00:00] Break (break)
-		[17:00:00-18:05:00] Eat Dinner (food)
-		[18:05:00-23:30:00] Break (break)
+		[17:00:00-18:00:00] Eat Dinner (food)
+		[18:00:00-23:30:00] Break (break)
 		[23:30:00-23:45:00] Go To Sleep ()`,
 	), "")
-	got = strings.Join(strings.Fields(quantizedTwo.String()), "")
+	got = strings.Replace(strings.Join(strings.Fields(quantizedTwo.String()), ""),
+		"->", "", -1)
 	if expected != got {
 		t.Fatalf("Expected: %s\n Got: %s", expected, quantizedTwo.String())
 	}
@@ -158,7 +161,8 @@ func TestGetTasksWithin(t *testing.T) {
 	[17:00:00-18:00:00] Eat Dinner (food)
 	[18:00:00-23:30:00] Break (break)
 	[23:30:00-23:45:00] Go To Sleep ()`
-	got := strings.Join(strings.Fields(sched.String()), "")
+	got := strings.Replace(strings.Join(strings.Fields(sched.String()), ""),
+		"->", "", -1)
 	if strings.Join(strings.Fields(expected), "") != got {
 		t.Fatalf("Expected: %s\n Got: %s", expected, sched.String())
 	}
@@ -198,11 +202,6 @@ func TestUpdateTimeBlock(t *testing.T) {
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	now := time.Now()
-	for i := range sched.Tasks {
-		sched.Tasks[i].StartTime = sched.Tasks[i].StartTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
-		sched.Tasks[i].EndTime = sched.Tasks[i].EndTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
-	}
 	nTask := NewTask("Nap", sched.Tasks[0].StartTime, sched.Tasks[0].EndTime)
 	err = sched.UpdateTimeBlock(nTask) 
 	if err != nil {
@@ -216,7 +215,8 @@ func TestUpdateTimeBlock(t *testing.T) {
 	[17:00:00-18:00:00] Eat Dinner (food)
 	[18:00:00-23:30:00] Break (break)
 	[23:30:00-23:45:00] Go To Sleep ()`
-	got := strings.Join(strings.Fields(sched.String()), "")
+	got := strings.Replace(strings.Join(strings.Fields(sched.String()), ""),
+		"->", "", -1)
 	if strings.Join(strings.Fields(expected), "") != got {
 		t.Fatalf("Expected: %s\n Got: %s", expected, sched.String())
 	}
@@ -240,7 +240,8 @@ func TestUpdateTimeBlock(t *testing.T) {
 	[17:00:00-18:00:00] Eat Dinner (food)
 	[18:00:00-23:30:00] Break (break)
 	[23:30:00-23:45:00] Go To Sleep ()`
-	got = strings.Join(strings.Fields(sched.String()), "")
+	got = strings.Replace(strings.Join(strings.Fields(sched.String()), ""),
+		"->", "", -1)
 	if strings.Join(strings.Fields(expected), "") != got {
 		t.Fatalf("Expected: %s\n Got: %s", expected, sched.String())
 	}
@@ -251,11 +252,6 @@ func TestAddTask(t *testing.T) {
 	sched, err := BuildFromFile("./test_data/meals_w_breaks.csv")
 	if err != nil {
 		t.Fatalf(err.Error())
-	}
-	now := time.Now()
-	for i := range sched.Tasks {
-		sched.Tasks[i].StartTime = sched.Tasks[i].StartTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
-		sched.Tasks[i].EndTime = sched.Tasks[i].EndTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
 	}
 	nTask := NewTask("Nap", sched.Tasks[0].StartTime, sched.Tasks[0].EndTime)
 	err = sched.AddTask(nTask)
@@ -275,7 +271,8 @@ func TestAddTask(t *testing.T) {
 	[17:00:00-18:00:00] Eat Dinner (food)
 	[18:00:00-23:30:00] Break (break)
 	[23:30:00-23:45:00] Go To Sleep ()`
-	got := strings.Join(strings.Fields(sched.String()), "")
+	got := strings.Replace(strings.Join(strings.Fields(sched.String()), ""),
+		"->", "", -1)
 	if strings.Join(strings.Fields(expected), "") != got {
 		t.Fatalf("Expected: %s\n Got: \n%s", expected, sched.String())
 	}
@@ -295,7 +292,8 @@ func TestAddTask(t *testing.T) {
 		[17:00:00-18:00:00] Eat Dinner (food)
 		[18:00:00-23:30:00] Break (break)
 		[23:30:00-23:45:00] Go To Sleep ()`
-	got = strings.Join(strings.Fields(sched.String()), "")
+	got = strings.Replace(strings.Join(strings.Fields(sched.String()), ""),
+		"->", "", -1)
 	if strings.Join(strings.Fields(expected), "") != got {
 		t.Fatalf("Expected: %s\n Got: \n%s", expected, sched.String())
 	}
@@ -307,10 +305,6 @@ func TestChangeCurrentTaskUntil(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 	now := time.Now()
-	for i := range sched.Tasks {
-		sched.Tasks[i].StartTime = sched.Tasks[i].StartTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
-		sched.Tasks[i].EndTime = sched.Tasks[i].EndTime.AddDate(now.Year(), int(now.Month()-1), now.Day()-1)
-	}
 	err = sched.ChangeCurrentTaskUntil("Nap", "", now.Add(1*time.Hour))
 	if err != nil {
 		t.Fatalf(err.Error())
