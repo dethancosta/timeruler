@@ -31,7 +31,6 @@ func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 	// TODO test
 	// TODO authenticate
-	log.Printf("GetCurrentTask: %s", r.URL.Path) // TODO delete this line
 	current, idx := s.Schedule.Tasks.GetTaskAtTime(time.Now())
 	if current == nil {
 		http.Error(w, "No current task found.", http.StatusNotFound)
@@ -93,7 +92,7 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	w.Write([]byte(s.Schedule.String()))
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) PlanSchedule(w http.ResponseWriter, r *http.Request) {
