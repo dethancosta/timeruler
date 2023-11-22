@@ -95,6 +95,14 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (s *Server) BuildSchedule(w http.ResponseWriter, r *http.Request) {
+	// TODO implement
+	_, err := w.Write([]byte("Not implemented."))
+	if err != nil {
+		log.Printf("BuildSchedule: %s", err.Error())
+	}
+}
+
 func (s *Server) PlanSchedule(w http.ResponseWriter, r *http.Request) {
 	// TODO implement
 }

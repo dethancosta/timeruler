@@ -24,6 +24,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Handle("/get", http.HandlerFunc(s.GetSchedule))
+	router.Handle("/build", http.HandlerFunc(s.BuildSchedule))
 	router.Handle("/current_task", http.HandlerFunc(s.GetCurrentTask))
 	router.Handle("/change_current", http.HandlerFunc(s.ChangeCurrentTask))
 
