@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	tc "github.com/dethancosta/timeruler/internal"
+	tr "github.com/dethancosta/timeruler/internal"
 	"github.com/gorilla/mux"
 )
 
 func main() {
-	sched, err := tc.BuildFromFile("schedule.csv")
+	sched, err := tr.BuildFromFile("schedule.csv")
 	if err != nil {
 		fmt.Println(err)
 		return

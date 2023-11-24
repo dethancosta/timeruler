@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	tc "github.com/dethancosta/timeruler/internal"
+	tr "github.com/dethancosta/timeruler/internal"
 )
 
 const (
@@ -21,7 +21,7 @@ type Server struct {
 	Owner    string // TODO replace with actual credentials for auth
 	Addr     string
 	AOFPath  string // Filepath for append-only log file
-	Schedule *tc.Schedule
+	Schedule *tr.Schedule
 }
 
 func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
@@ -87,7 +87,7 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 	err = s.Schedule.ChangeCurrentTaskUntil(taskModel.Description, taskModel.Tag, end)
 	if err != nil {
 		log.Printf("ChangeCurrentTask: %s", err.Error())
-		if errors.Is(err, tc.InvalidTimeError{}) {
+		if errors.Is(err, tr.InvalidTimeError{}) {
 			http.Error(w, "Please give a valid time for the task to finish.", http.StatusBadRequest)
 		} else {
 			http.Error(w, "Encountered an internal server error.", http.StatusInternalServerError)
@@ -104,7 +104,7 @@ func (s *Server) BuildSchedule(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Today's schedule has already been built.", http.StatusBadRequest)
 		return
 	}
-	err := r.ParseMultipartForm(16 << 20) // max file size 16 MB
+	err := r.ParseMultipartForm(8 << 20) // max file size 8 MB
 	if err != nil {
 		log.Printf("BuildSchedule: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -137,7 +137,7 @@ func (s *Server) BuildSchedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.Schedule, err = tc.BuildFromFile(tmpfile.Name())
+	s.Schedule, err = tr.BuildFromFile(tmpfile.Name())
 	if err != nil {
 		log.Printf("BuildSchedule: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
