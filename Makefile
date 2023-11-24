@@ -5,4 +5,4 @@ tui:
 	go build -o tc-tui ./cmd/tui
 
 server:
-	go build -o timecop ./cmd/server
+	go build -o timeruler ./cmd/server

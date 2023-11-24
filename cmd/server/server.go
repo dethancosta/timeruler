@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
-	tc "github.com/dethancosta/timecop/internal"
+	tc "github.com/dethancosta/timeruler/internal"
 )
 
 const (
@@ -40,7 +42,7 @@ func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 		err := s.Schedule.UpdateCurrentTask()
 		if err != nil {
 			log.Printf("GetCurrentTask: %s", err.Error())
-			http.Error(w, "Encountered an internal server error.", http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}
@@ -55,7 +57,7 @@ func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		log.Printf("GetCurrentTask: %s", err.Error())
-		http.Error(w, "Encountered an internal server error.", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	w.Write(msg)
@@ -96,11 +98,52 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) BuildSchedule(w http.ResponseWriter, r *http.Request) {
-	// TODO implement
-	_, err := w.Write([]byte("Not implemented."))
+	// TODO authenticate
+	// TODO test
+	if s.Schedule != nil {
+		http.Error(w, "Today's schedule has already been built.", http.StatusBadRequest)
+		return
+	}
+	err := r.ParseMultipartForm(16 << 20) // max file size 16 MB
 	if err != nil {
 		log.Printf("BuildSchedule: %s", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+
+	buildFile, h, err := r.FormFile("buildFile")
+	if err != nil {
+		log.Printf("BuildSchedule: %s", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	tmpfile, err := os.CreateTemp("./", h.Filename)
+	defer func () {
+		tmpfile.Close()
+		err = os.Remove(tmpfile.Name())
+		if err != nil {
+			log.Printf("BuildSchedule: %s", err.Error())
+		}
+	}()
+	if err != nil {
+		log.Printf("BuildSchedule: %s", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	_, err = io.Copy(tmpfile, buildFile)
+	if err != nil {
+		log.Printf("BuildSchedule: %s", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	s.Schedule, err = tc.BuildFromFile(tmpfile.Name())
+	if err != nil {
+		log.Printf("BuildSchedule: %s", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) PlanSchedule(w http.ResponseWriter, r *http.Request) {

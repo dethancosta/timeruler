@@ -1,4 +1,4 @@
-module github.com/dethancosta/timecop
+module github.com/dethancosta/timeruler
 
 go 1.21.0
 

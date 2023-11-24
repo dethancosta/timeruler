@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	tc "github.com/dethancosta/timecop/internal"
+	tc "github.com/dethancosta/timeruler/internal"
 	"github.com/gorilla/mux"
 )
 
