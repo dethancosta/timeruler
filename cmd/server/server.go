@@ -27,7 +27,21 @@ type Server struct {
 func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 	// TODO test
 	// TODO authenticate
-	w.Write([]byte(s.Schedule.String()))
+	if s.Schedule == nil {
+		http.Error(w, "No schedule has been built yet.", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	body := make(map[string]string)
+	body["Schedule"] = s.Schedule.String()
+	msg, err := json.Marshal(body)
+	if err != nil {
+		log.Printf("GetSchedule: %s", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Write(msg)
 }
 
 func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
@@ -46,20 +60,23 @@ func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	msg, err := json.Marshal(struct{
+	msg, err := json.Marshal(map[string]struct{
 		Description string `json:"Description"`
 		Tag string `json:"Tag"`
 		Until string `json:"Until"`
-	}{
-		Description: current.Description,
-		Tag: current.Tag,
-		Until: current.EndTime.Format(time.TimeOnly),
+		}{
+			"Task": {
+				Description: current.Description,
+				Tag: current.Tag,
+				Until: current.EndTime.Format(time.TimeOnly),
+		},
 	})
 	if err != nil {
 		log.Printf("GetCurrentTask: %s", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(msg)
 }
 
