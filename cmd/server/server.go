@@ -60,15 +60,15 @@ func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	msg, err := json.Marshal(map[string]struct{
+	msg, err := json.Marshal(map[string]struct {
 		Description string `json:"Description"`
-		Tag string `json:"Tag"`
-		Until string `json:"Until"`
-		}{
-			"Task": {
-				Description: current.Description,
-				Tag: current.Tag,
-				Until: current.EndTime.Format(time.TimeOnly),
+		Tag         string `json:"Tag"`
+		Until       string `json:"Until"`
+	}{
+		"Task": {
+			Description: current.Description,
+			Tag:         current.Tag,
+			Until:       current.EndTime.Format(time.TimeOnly),
 		},
 	})
 	if err != nil {
@@ -83,10 +83,10 @@ func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 	// TODO test
 	// TODO authenticate
-	var taskModel struct{
+	var taskModel struct {
 		Description string `json:"Description"`
-		Tag string `json:"Tag"`
-		Until string `json:"Until"`
+		Tag         string `json:"Tag"`
+		Until       string `json:"Until"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&taskModel)
 	if err != nil {
@@ -94,7 +94,7 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid HTTP Body", http.StatusBadRequest)
 		return
 	}
-	// TODO validate time 
+	// TODO validate time
 	end, err := time.Parse(time.TimeOnly, taskModel.Until)
 	now := time.Now()
 	end = time.Date(now.Year(), now.Month(), now.Day(), end.Hour(), end.Minute(), 0, 0, time.Local)
@@ -137,7 +137,7 @@ func (s *Server) BuildSchedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tmpfile, err := os.CreateTemp("./", h.Filename)
-	defer func () {
+	defer func() {
 		tmpfile.Close()
 		err = os.Remove(tmpfile.Name())
 		if err != nil {
