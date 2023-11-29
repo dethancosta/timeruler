@@ -9,13 +9,6 @@ import (
 )
 
 func main() {
-	/*
-	sched, err := tr.BuildFromFile("schedule.csv")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	*/
 
 	s := Server{
 		Owner: "",
