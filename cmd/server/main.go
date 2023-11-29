@@ -11,14 +11,14 @@ import (
 func main() {
 
 	s := Server{
-		Owner: "",
-		Addr: "",
+		Owner:   "",
+		Addr:    "",
 		AOFPath: "",
 		//Schedule: sched,
 	}
 
 	router := mux.NewRouter()
-	// TODO update API to use 
+	// TODO update API to use
 	// - GET /schedule instead of /get, POST /schedule instead of /build
 	// - GET /current instead of /current, POST /current instead of /change_current
 	router.Handle("/get", http.HandlerFunc(s.GetSchedule))
@@ -27,6 +27,5 @@ func main() {
 	router.Handle("/change_current", http.HandlerFunc(s.ChangeCurrentTask))
 
 	fmt.Printf("Running on %s\n", DefaultPort)
-	http.ListenAndServe("localhost:" + DefaultPort, router)
+	http.ListenAndServe("localhost:"+DefaultPort, router)
 }
-
