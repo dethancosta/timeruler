@@ -96,6 +96,8 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 	}
 	// TODO validate time 
 	end, err := time.Parse(time.TimeOnly, taskModel.Until)
+	now := time.Now()
+	end = time.Date(now.Year(), now.Month(), now.Day(), end.Hour(), end.Minute(), 0, 0, time.Local)
 	if err != nil {
 		log.Printf("ChangeCurrentTask: %s", err)
 		http.Error(w, fmt.Sprintf("Please give the time in the following format: %s", time.TimeOnly), http.StatusBadRequest)
