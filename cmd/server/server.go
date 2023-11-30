@@ -19,8 +19,7 @@ const (
 
 type Server struct {
 	Owner    string // TODO replace with actual credentials for auth
-	Addr     string
-	AOFPath  string // Filepath for append-only log file
+	Addr     string // Address of the server
 	Schedule *tr.Schedule
 }
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	//tr "github.com/dethancosta/timeruler/internal"
 	"github.com/gorilla/mux"
 )
 
@@ -13,8 +12,6 @@ func main() {
 	s := Server{
 		Owner:   "",
 		Addr:    "",
-		AOFPath: "",
-		//Schedule: sched,
 	}
 
 	router := mux.NewRouter()

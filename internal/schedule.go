@@ -32,7 +32,7 @@ func (s *Schedule) GetTasksWithin(before time.Time, after time.Time) []*Task {
 	if before_idx == -1 || after_idx == -1 {
 		return nil
 	}
-	return s.Tasks[before_idx:after_idx+1]
+	return s.Tasks[before_idx : after_idx+1]
 }
 
 // ChangeCurrentTaskUntil updates the schedule's current task
@@ -53,7 +53,9 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 		return err
 	}
 
-	if !s.Tasks.IsConflict(newCurrent) {
+	if len(s.Tasks) == 0 || s.Tasks.get(len(s.Tasks)-1).EndTime.Before(time.Now()) {
+		s.Tasks = append(s.Tasks, &newCurrent)
+	} else if !s.Tasks.IsConflict(newCurrent) {
 		_, idx := s.Tasks.GetTaskAtTime(time.Now())
 		s.Tasks[idx].EndTime = time.Now() // Should be the break
 		err := s.Tasks[idx].Quantize()
@@ -70,6 +72,7 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 		}
 		s.Tasks = newList
 	}
+	s.FixBreaks()
 
 	return nil
 }
@@ -120,7 +123,7 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 			return InvalidTimeError{"Task must end during the current day."}
 		}
 
-		newTasks, err := NewTaskList() 
+		newTasks, err := NewTaskList()
 		if err != nil {
 			return fmt.Errorf("UpdateTimeBlock: %w", err)
 		}
@@ -130,7 +133,7 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 			} else if s.Tasks[i].StartTime.After(t.EndTime) {
 				newTasks = append(newTasks, &t)
 				newTasks = append(newTasks, s.Tasks[i:]...)
-				break 
+				break
 			} else {
 				if s.Tasks[i].StartTime.Before(t.StartTime) {
 					nt := NewTask(s.Tasks[i].Description, s.Tasks[i].StartTime, t.StartTime).WithTag(s.Tasks[i].Tag)
@@ -142,7 +145,7 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 				}
 			}
 		}
-		
+
 		newTasks.sort()
 		s.Tasks = newTasks
 		s.FixBreaks()
@@ -207,9 +210,9 @@ func NewSchedule(taskList TaskList) Schedule {
 	}
 	currentTask, currentIdx := taskList.GetTaskAtTime(time.Now())
 	return Schedule{
-		Tasks: taskList,
+		Tasks:       taskList,
 		CurrentTask: currentTask,
-		CurrentID: currentIdx,
+		CurrentID:   currentIdx,
 	}
 }
 
