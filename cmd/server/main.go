@@ -10,8 +10,8 @@ import (
 func main() {
 
 	s := Server{
-		Owner:   "",
-		Addr:    "",
+		Owner: "",
+		Addr:  "",
 	}
 
 	router := mux.NewRouter()
