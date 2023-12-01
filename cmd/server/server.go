@@ -24,10 +24,10 @@ type Server struct {
 }
 
 type TaskModel struct {
-		Description string `json:"Description"`
-		Tag         string `json:"Tag"`
-		Until       string `json:"Until"`
-	}
+	Description string `json:"Description"`
+	Tag         string `json:"Tag"`
+	Until       string `json:"Until"`
+}
 
 func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 	// TODO test
@@ -119,14 +119,14 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) UpdateTasks(w http.ResponseWriter, r *http.Request) {
-	
+
 	if s.Schedule == nil {
 		http.Error(w, "No schedule has been built yet.", http.StatusBadRequest)
 		return
 	}
 
 	var tasks []tr.Task
-	
+
 	err := json.NewDecoder(r.Body).Decode(&tasks)
 	if err != nil {
 		log.Printf("UpdateTasks: %s", err.Error())
