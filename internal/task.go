@@ -11,10 +11,10 @@ const (
 )
 
 type Task struct {
-	Description string    `json:"description"`
-	StartTime   time.Time `json:"startTime"`
-	EndTime     time.Time `json:"endTime"`
-	Tag         string    `json:"tag"`
+	Description string    `json:"Description"`
+	StartTime   time.Time `json:"Start"`
+	EndTime     time.Time `json:"End"`
+	Tag         string    `json:"Tag"`
 }
 
 // NewTask returns a new Task object with the given description,

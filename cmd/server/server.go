@@ -23,6 +23,12 @@ type Server struct {
 	Schedule *tr.Schedule
 }
 
+type TaskModel struct {
+		Description string `json:"Description"`
+		Tag         string `json:"Tag"`
+		Until       string `json:"Until"`
+	}
+
 func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 	// TODO test
 	// TODO authenticate
@@ -82,17 +88,14 @@ func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 	// TODO test
 	// TODO authenticate
-	var taskModel struct {
-		Description string `json:"Description"`
-		Tag         string `json:"Tag"`
-		Until       string `json:"Until"`
-	}
+	var taskModel TaskModel
 	err := json.NewDecoder(r.Body).Decode(&taskModel)
 	if err != nil {
 		log.Printf("ChangeCurrentTask: %s", err.Error())
 		http.Error(w, "Invalid HTTP Body", http.StatusBadRequest)
 		return
 	}
+
 	// TODO validate time
 	end, err := time.Parse(time.TimeOnly, taskModel.Until)
 	now := time.Now()
@@ -112,6 +115,40 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) UpdateTasks(w http.ResponseWriter, r *http.Request) {
+	
+	if s.Schedule == nil {
+		http.Error(w, "No schedule has been built yet.", http.StatusBadRequest)
+		return
+	}
+
+	var tasks []tr.Task
+	
+	err := json.NewDecoder(r.Body).Decode(&tasks)
+	if err != nil {
+		log.Printf("UpdateTasks: %s", err.Error())
+		http.Error(w, "Invalid HTTP Body", http.StatusBadRequest)
+		return
+	}
+
+	now := time.Now()
+	for _, t := range tasks {
+		if t.StartTime.Before(now) {
+			http.Error(w, "A task cannot start before the current time", http.StatusBadRequest)
+			return
+		}
+	}
+
+	err = s.Schedule.UpdateTimeBlock(tasks...)
+	// TODO check type of error and return appropriate response
+	if err != nil {
+		http.Error(w, "Update failed", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
