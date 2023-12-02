@@ -36,6 +36,15 @@ func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No schedule has been built yet.", http.StatusNotFound)
 		return
 	}
+	_, idx := s.Schedule.Tasks.GetTaskAtTime(time.Now())
+	if idx != s.Schedule.CurrentID {
+		err := s.Schedule.UpdateCurrentTask()
+		if err != nil {
+			log.Printf("GetSchedule: %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	body := make(map[string]string)

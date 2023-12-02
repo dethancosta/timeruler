@@ -111,7 +111,8 @@ func (s *Schedule) AddTask(t Task) error {
 // tasks as needed. It returns an error if the update
 // could not be completed.
 func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
-	for _, t := range tasks {
+	for i := range tasks {
+		t := tasks[i]
 		if !t.IsValid() {
 			return InvalidTimeError{"One or more tasks has an invalid time."}
 		}
@@ -242,6 +243,7 @@ func BuildFromFile(fileName string) (*Schedule, error) {
 				errors.New("BuildFromFile: Field missing from line " + strconv.Itoa(lc))
 		}
 		desc = line[0]
+
 		// Set task times to the current day (for now)
 		now := time.Now()
 		start, err = time.Parse(time.TimeOnly, line[1])
@@ -253,6 +255,7 @@ func BuildFromFile(fileName string) (*Schedule, error) {
 		if err != nil {
 			return nil, errors.New("BuildFromFile: time value improperly formatted on line " + strconv.Itoa(lc))
 		}
+
 		end = time.Date(now.Year(), now.Month(), now.Day(), end.Hour(), end.Minute(), 0, 0, time.Local)
 		tag = strings.TrimSpace(line[3])
 		var task Task
@@ -264,6 +267,7 @@ func BuildFromFile(fileName string) (*Schedule, error) {
 		if task.IsEmpty() {
 			return nil, errors.New("BuildFromFile: Task could not be created on line " + strconv.Itoa(lc))
 		}
+
 		taskList = append(taskList, task)
 		line, err = r.Read()
 		if err != nil && err != io.EOF {
