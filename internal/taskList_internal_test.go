@@ -122,7 +122,7 @@ func TestResolveConflicts(t *testing.T) {
 	if len(tl) != len(tl2)+2 {
 		t.Fatalf("Expected length: %d, Actual length: %d", len(tl2)+2, len(tl))
 	}
-	if !(tl.get(3).Description == "Break" && 
+	if !(tl.get(3).Description == "Break" &&
 		tl.get(4).Description == "test2" &&
 		tl.get(5).Description == "Break" &&
 		tl.get(6).Description == "Eat Dinner") {

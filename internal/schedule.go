@@ -134,33 +134,33 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 		}
 
 		/*
-		newTasks, err := NewTaskList()
-		if err != nil {
-			return fmt.Errorf("UpdateTimeBlock: %w", err)
-		}
+			newTasks, err := NewTaskList()
+			if err != nil {
+				return fmt.Errorf("UpdateTimeBlock: %w", err)
+			}
 
-		for i := range s.Tasks {
-			if s.Tasks[i].EndTime.Before(t.StartTime) {
-				newTasks = append(newTasks, s.Tasks[i])
-			} else if s.Tasks[i].StartTime.After(t.EndTime) {
-				newTasks = append(newTasks, &t)
-				newTasks = append(newTasks, s.Tasks[i:]...)
-				break
-			} else {
-				if s.Tasks[i].StartTime.Before(t.StartTime) {
-					nt := NewTask(s.Tasks[i].Description, s.Tasks[i].StartTime, t.StartTime).WithTag(s.Tasks[i].Tag)
-					newTasks = append(newTasks, &nt)
-				}
-				if s.Tasks[i].EndTime.After(t.EndTime) {
-					nt := NewTask(s.Tasks[i].Description, t.EndTime, s.Tasks[i].EndTime).WithTag(s.Tasks[i].Tag)
-					newTasks = append(newTasks, &nt)
+			for i := range s.Tasks {
+				if s.Tasks[i].EndTime.Before(t.StartTime) {
+					newTasks = append(newTasks, s.Tasks[i])
+				} else if s.Tasks[i].StartTime.After(t.EndTime) {
+					newTasks = append(newTasks, &t)
+					newTasks = append(newTasks, s.Tasks[i:]...)
+					break
+				} else {
+					if s.Tasks[i].StartTime.Before(t.StartTime) {
+						nt := NewTask(s.Tasks[i].Description, s.Tasks[i].StartTime, t.StartTime).WithTag(s.Tasks[i].Tag)
+						newTasks = append(newTasks, &nt)
+					}
+					if s.Tasks[i].EndTime.After(t.EndTime) {
+						nt := NewTask(s.Tasks[i].Description, t.EndTime, s.Tasks[i].EndTime).WithTag(s.Tasks[i].Tag)
+						newTasks = append(newTasks, &nt)
+					}
 				}
 			}
-		}
 		*/
 
 		//newTasks.sort()
-		
+
 		newTasks, err := s.Tasks.ResolveConflicts(t)
 		if err != nil {
 			return fmt.Errorf("UpdateTimeBlock: %w", err)
