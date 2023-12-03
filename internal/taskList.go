@@ -96,34 +96,22 @@ func (tl TaskList) IsConsistent() bool {
 // ResolveConflicts adjusts the start and end times of the tasks starting at
 // the given index to accomodate the new given task. It updates a copy of
 // the task list and returns the updated copy.
-func (tl TaskList) ResolveConflicts(oldTaskId int, newTask Task) (TaskList, error) {
-	if oldTaskId < 0 || oldTaskId >= len(tl) {
-		return nil, IndexOutOfBoundsError{}
-	}
+func (tl TaskList) ResolveConflicts(newTask Task) (TaskList, error) {
 
-	for idx := oldTaskId; idx < len(tl); idx++ {
-		oldTask := *tl.get(idx)
+	i := 0
+	for i < len(tl) {
+		oldTask := *tl.get(i)
 		if !oldTask.Conflicts(newTask) {
-			break 
+			i++
+			continue
 		}
 
 		updated := Resolve(oldTask, newTask)
-		var pre TaskList
-		for i := 0; i < idx; i++ {
-			pre = append(pre, tl[i])
+		var post TaskList
+		if i < len(tl)-1 {
+			post = tl[i+1:]
 		}
-		if idx < len(tl)-1 {
-			var post TaskList
-			for i := idx + 1; i < len(tl); i++ {
-				//nt := NewTask(tl[i].Description, tl[i].StartTime, tl[i].EndTime).WithTag(tl[i].Tag)
-				//post = append(post, &nt)
-				post = append(post, tl[i])
-			}
-			tl = append(pre, updated...)
-			tl = append(tl, post...)
-		} else {
-			tl = append(pre, updated...)
-		}
+		tl = append(tl[:i], append(updated, post...)...)
 	}
 
 	tl = append(tl, &newTask)

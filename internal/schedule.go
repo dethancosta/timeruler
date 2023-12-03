@@ -55,6 +55,17 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 
 	if len(s.Tasks) == 0 || s.Tasks.get(len(s.Tasks)-1).EndTime.Before(time.Now()) {
 		s.Tasks = append(s.Tasks, &newCurrent)
+	} else if s.Tasks[0].StartTime.After(time.Now()) {
+		if !s.Tasks.IsConflict(newCurrent) {
+			s.Tasks = append([]*Task{&newCurrent}, s.Tasks...)
+		} else {
+			newList, err := s.Tasks.ResolveConflicts(newCurrent)
+			if err != nil {
+				return err
+			}
+			s.Tasks = newList
+		}
+
 	} else if !s.Tasks.IsConflict(newCurrent) {
 		_, idx := s.Tasks.GetTaskAtTime(time.Now())
 		s.Tasks[idx].EndTime = time.Now() // Should be the break
@@ -65,8 +76,7 @@ func (s *Schedule) ChangeCurrentTaskUntil(desc, tag string, end time.Time) error
 
 		s.Tasks = append(s.Tasks[:idx+1], append([]*Task{&newCurrent}, s.Tasks[idx+1:]...)...)
 	} else {
-		_, idx := s.Tasks.GetTaskAtTime(time.Now())
-		newList, err := s.Tasks.ResolveConflicts(idx, newCurrent)
+		newList, err := s.Tasks.ResolveConflicts(newCurrent)
 		if err != nil {
 			return err
 		}
@@ -111,8 +121,7 @@ func (s *Schedule) AddTask(t Task) error {
 // tasks as needed. It returns an error if the update
 // could not be completed.
 func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
-	for i := range tasks {
-		t := tasks[i]
+	for _, t := range tasks {
 		if !t.IsValid() {
 			return InvalidTimeError{"One or more tasks has an invalid time."}
 		}
@@ -124,10 +133,12 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 			return InvalidTimeError{"Task must end during the current day."}
 		}
 
+		/*
 		newTasks, err := NewTaskList()
 		if err != nil {
 			return fmt.Errorf("UpdateTimeBlock: %w", err)
 		}
+
 		for i := range s.Tasks {
 			if s.Tasks[i].EndTime.Before(t.StartTime) {
 				newTasks = append(newTasks, s.Tasks[i])
@@ -146,8 +157,14 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 				}
 			}
 		}
+		*/
 
-		newTasks.sort()
+		//newTasks.sort()
+		
+		newTasks, err := s.Tasks.ResolveConflicts(t)
+		if err != nil {
+			return fmt.Errorf("UpdateTimeBlock: %w", err)
+		}
 		s.Tasks = newTasks
 		s.FixBreaks()
 	}

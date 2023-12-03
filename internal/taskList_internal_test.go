@@ -106,7 +106,7 @@ func TestResolveConflicts(t *testing.T) {
 
 	tl := s.Tasks
 	nt := NewTask("Test", tl.get(1).StartTime, tl.get(1).EndTime)
-	tl2, err := tl.ResolveConflicts(1, nt)
+	tl2, err := tl.ResolveConflicts(nt)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -115,7 +115,7 @@ func TestResolveConflicts(t *testing.T) {
 	}
 	nt2 := NewTask("test2", tl2.get(3).StartTime.Add(20*time.Minute), tl2.get(3).EndTime.Add(-20*time.Minute))
 
-	tl, err = tl2.ResolveConflicts(3, nt2)
+	tl, err = tl2.ResolveConflicts(nt2)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
