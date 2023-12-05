@@ -13,10 +13,6 @@ import (
 	tr "github.com/dethancosta/timeruler/internal"
 )
 
-const (
-	DefaultPort = "6576"
-)
-
 type Server struct {
 	Owner    string // TODO replace with actual credentials for auth
 	Addr     string // Address of the server
@@ -37,7 +33,10 @@ func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, idx := s.Schedule.Tasks.GetTaskAtTime(time.Now())
-	if idx != s.Schedule.CurrentID {
+	if idx == -1 { // TODO check that this doesn't break anything
+		s.Schedule.CurrentTask = nil
+		s.Schedule.CurrentID = -1
+	} else if idx != s.Schedule.CurrentID {
 		err := s.Schedule.UpdateCurrentTask()
 		if err != nil {
 			log.Printf("GetSchedule: %s", err.Error())
