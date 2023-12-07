@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/muesli/go-app-paths"
+	gap "github.com/muesli/go-app-paths"
 )
 
 func SetPid(address, port string) error {

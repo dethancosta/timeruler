@@ -10,6 +10,7 @@ import (
 )
 
 const DefaultPort = 6576
+
 var Address = "localhost"
 
 func main() {
