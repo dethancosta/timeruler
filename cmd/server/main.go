@@ -10,6 +10,7 @@ import (
 )
 
 const DefaultPort = 6576
+var Address = "localhost"
 
 func main() {
 
@@ -20,9 +21,18 @@ func main() {
 
 	// TODO ensure port value is valid
 	var port int
-	flag.IntVar(&port,"p", DefaultPort, "The port that the server will run on")
+	var standalone bool
+	flag.IntVar(&port, "p", DefaultPort, "The port that the server will run on")
+	flag.BoolVar(&standalone, "sa", false, "Whether or not the server is run locally (StandAlone)")
 	flag.Parse()
 	portStr := strconv.Itoa(port)
+
+	if standalone {
+		err := SetPid(Address, portStr)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	router := mux.NewRouter()
 	// TODO update API to use
@@ -35,5 +45,5 @@ func main() {
 	router.Handle("/update", http.HandlerFunc(s.UpdateTasks))
 
 	fmt.Printf("Running on %s\n", portStr)
-	http.ListenAndServe("localhost:"+portStr, router)
+	http.ListenAndServe(Address+":"+portStr, router)
 }
