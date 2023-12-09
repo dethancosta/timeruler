@@ -63,7 +63,7 @@ func SetPid(address, port string) error {
 		return err
 	}
 
-	configFile, err = os.OpenFile(configPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	configFile, err = os.OpenFile(configPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
 		return err
 	}

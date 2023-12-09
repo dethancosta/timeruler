@@ -2,7 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	//"io"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -33,6 +34,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		//log.SetOutput(io.Discard)
 	}
 
 	router := mux.NewRouter()
@@ -45,6 +47,10 @@ func main() {
 	router.Handle("/change_current", http.HandlerFunc(s.ChangeCurrentTask))
 	router.Handle("/update", http.HandlerFunc(s.UpdateTasks))
 
-	fmt.Printf("Running on %s\n", portStr)
-	http.ListenAndServe(Address+":"+portStr, router)
+	log.Printf("Running on %s\n", portStr)
+	err := http.ListenAndServe(Address+":"+portStr, router)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("Stopped running on %s\n", portStr)
 }
