@@ -17,7 +17,7 @@ var (
 )
 
 func TestGetCurrentTask(t *testing.T) {
-	task := NewTask("Task1", time.Now().Add(-10 * time.Minute), time.Now().Add(5 * time.Minute))
+	task := NewTask("Task1", time.Now().Add(-10*time.Minute), time.Now().Add(5*time.Minute))
 	tl, err := NewTaskList(
 		task,
 	)
@@ -42,8 +42,8 @@ func TestGetCurrentTask(t *testing.T) {
 	}
 
 	// TODO test that gap is a break
-	taskBefore := NewTask("Before Break", time.Now().Add(-30 * time.Minute), time.Now().Add(-20 * time.Minute))
-	taskAfter := NewTask("Before Break", time.Now().Add(20 * time.Minute), time.Now().Add(30 * time.Minute))
+	taskBefore := NewTask("Before Break", time.Now().Add(-30*time.Minute), time.Now().Add(-20*time.Minute))
+	taskAfter := NewTask("Before Break", time.Now().Add(20*time.Minute), time.Now().Add(30*time.Minute))
 	tl2, err := NewTaskList(taskBefore, taskAfter)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -53,7 +53,7 @@ func TestGetCurrentTask(t *testing.T) {
 	if s2.GetCurrentTaskStr() != expectedBreak.String() {
 		t.Fatalf("Expected: %s, Got: %s", expectedBreak.String(), s2.GetCurrentTaskStr())
 	}
-	// TODO add more tests 
+	// TODO add more tests
 }
 
 func TestBuildFromFile(t *testing.T) {
@@ -203,7 +203,7 @@ func TestUpdateTimeBlock(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 	nTask := NewTask("Nap", sched.Tasks[0].StartTime, sched.Tasks[0].EndTime)
-	err = sched.UpdateTimeBlock(nTask) 
+	err = sched.UpdateTimeBlock(nTask)
 	if err != nil {
 		t.Fatalf(err.Error() + "\n" + nTask.String())
 	}
@@ -221,7 +221,7 @@ func TestUpdateTimeBlock(t *testing.T) {
 		t.Fatalf("Expected: %s\n Got: %s", expected, sched.String())
 	}
 
-	nTask = NewTask("Nap Again", sched.Tasks[1].StartTime.Add(1*time.Hour), sched.Tasks[1].EndTime.Add(-1*time.Hour)) 
+	nTask = NewTask("Nap Again", sched.Tasks[1].StartTime.Add(1*time.Hour), sched.Tasks[1].EndTime.Add(-1*time.Hour))
 	if nTask.IsEmpty() {
 		t.Fatalf("Task should not be empty")
 	}
