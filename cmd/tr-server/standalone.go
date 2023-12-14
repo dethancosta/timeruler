@@ -26,6 +26,14 @@ func SetPid(address, port string) error {
 	config := make(map[string]string)
 	configFile, err := os.OpenFile(configPath, os.O_RDWR, 0644)
 	if err != nil && os.IsNotExist(err) {
+		configDir, err := scope.ConfigPath("")
+		if err != nil {
+			return err
+		}
+		err = os.MkdirAll(configDir, os.ModePerm)
+		if err != nil {
+			return err
+		}
 		configFile, err = os.Create(configPath)
 		if err != nil {
 			return err
