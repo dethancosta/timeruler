@@ -85,7 +85,6 @@ func (t Task) IsValid() bool {
 // Conflicts returns true if the given task's time span overlaps
 // with the receiver task's time span.
 func (t Task) Conflicts(other Task) bool {
-	// TODO test
 	return t.StartTime.Before(other.EndTime) && other.StartTime.Before(t.EndTime)
 }
 

@@ -320,7 +320,17 @@ func TestChangeCurrentTaskUntil(t *testing.T) {
 }
 
 func TestFixBreaks(t *testing.T) {
-	// TODO implement
+	// TODO finish implementing
+	tl, err := NewTaskList(NewTask("", time.Now(), time.Now().Add(5 * time.Minute)))
+	if err != nil {
+		t.Fatalf("NewTaskList should not throw error: %s", err.Error())
+	}
+	sched := NewSchedule(tl)
+	l := len(sched.Tasks)
+	sched.FixBreaks()
+	if l != len(sched.Tasks) {
+		t.Fatalf("FixBreaks should not change length of single-task schedule")
+	}
 }
 
 func TestNewSchedule(t *testing.T) {

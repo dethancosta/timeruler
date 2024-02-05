@@ -172,6 +172,7 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 	return nil
 }
 
+// TODO add godoc comment
 func (s *Schedule) FixBreaks() {
 	// TODO test
 	for i := 0; i < len(s.Tasks)-1; i++ {
