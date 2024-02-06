@@ -32,6 +32,14 @@ func TestNewTaskList(t *testing.T) {
 	if len(validList) != 4 {
 		t.Fatalf("Expected length: 4, Actual length: %d", len(validList))
 	}
+	for i := 0; i < len(validList)-1; i++ {
+		if !validList.get(i).StartTime.Before(validList.get(i+1).StartTime) {
+			t.Fatalf("Tasks should be in order")
+		}
+		if !(validList.get(i).EndTime == validList.get(i+1).StartTime) {
+			t.Fatalf("Task list should have no time slot unaccounted for")
+		}
+	}
 }
 
 func TestGetTaskAtTime(t *testing.T) {

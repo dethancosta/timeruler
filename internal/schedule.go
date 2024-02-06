@@ -174,7 +174,6 @@ func (s *Schedule) UpdateTimeBlock(tasks ...Task) error {
 
 // TODO add godoc comment
 func (s *Schedule) FixBreaks() {
-	// TODO test
 	for i := 0; i < len(s.Tasks)-1; i++ {
 		if s.Tasks[i].IsBreak() && s.Tasks[i+1].IsBreak() {
 			s.Tasks[i+1].StartTime = s.Tasks[i].StartTime

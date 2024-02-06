@@ -40,7 +40,6 @@ func (tl TaskList) IsConflict(t Task) bool {
 // NewTaskList creates a new TaskList from the given tasks.
 // It returns nil and an error if there is a time conflict.
 func NewTaskList(tasks ...Task) (TaskList, error) {
-	// TODO test
 	// add all tasks, sort, then check for conflicts
 
 	for _, t := range tasks {
