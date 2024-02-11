@@ -41,9 +41,8 @@ func TestGetCurrentTask(t *testing.T) {
 		t.Fatalf("Expected: 0, Got: %d", currentIdx)
 	}
 
-	// TODO test that gap is a break
 	taskBefore := NewTask("Before Break", time.Now().Add(-30*time.Minute), time.Now().Add(-20*time.Minute))
-	taskAfter := NewTask("Before Break", time.Now().Add(20*time.Minute), time.Now().Add(30*time.Minute))
+	taskAfter := NewTask("After Break", time.Now().Add(20*time.Minute), time.Now().Add(30*time.Minute))
 	tl2, err := NewTaskList(taskBefore, taskAfter)
 	if err != nil {
 		t.Fatalf(err.Error())

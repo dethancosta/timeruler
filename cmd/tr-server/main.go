@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -49,7 +50,8 @@ func main() {
 	log.Printf("Running on %s\n", portStr)
 	err := http.ListenAndServe(Address+":"+portStr, router)
 	if err != nil {
-		panic(err)
+		log.Println(err.Error())
+		os.Exit(1)
 	}
 	log.Printf("Stopped running on %s\n", portStr)
 }
