@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	tr "github.com/dethancosta/timeruler/internal"
@@ -16,6 +17,8 @@ import (
 type Server struct {
 	Owner    string // TODO replace with actual credentials for auth
 	Addr     string // Address of the server
+	Ntfy string
+
 	Schedule *tr.Schedule
 }
 
@@ -32,7 +35,7 @@ func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "No schedule has been built yet.", http.StatusNotFound)
 		return
 	}
-	_, idx := s.Schedule.Tasks.GetTaskAtTime(time.Now())
+	current, idx := s.Schedule.Tasks.GetTaskAtTime(time.Now())
 	if idx == -1 { // TODO check that this doesn't break anything
 		s.Schedule.CurrentTask = nil
 		s.Schedule.CurrentID = -1
@@ -42,6 +45,19 @@ func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 			log.Printf("GetSchedule: %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
+		}
+		if NtfyId != "" {
+			currentModel := TaskModel{
+				current.Description,
+				current.Tag,
+				current.EndTime.Format(time.TimeOnly),
+			}
+			err = s.ntfyNewCurrent(NtfyId, currentModel)
+			if err != nil {
+				log.Printf("GetSchedule: %s", err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -211,4 +227,23 @@ func (s *Server) BuildSchedule(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) PlanSchedule(w http.ResponseWriter, r *http.Request) {
 	// TODO implement
+}
+
+func (s *Server) ntfyNewCurrent(ntfyId string, task TaskModel) error {
+	// TODO implement
+	req, err := http.NewRequest("POST", "https://ntfy.sh/" + ntfyId,
+		strings.NewReader("Until " + task.Until))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Title", task.Description)
+	req.Header.Set("Tags", "hourglass")
+	_, err = http.DefaultClient.Do(req)
+
+	return err
+}
+
+func (s *Server) ntfyNewSchedule() error {
+	// TODO implement
+	return nil
 }
