@@ -2,10 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -52,6 +54,36 @@ func main() {
 	router.Handle("/current", http.HandlerFunc(s.GetCurrentTask))
 	router.Handle("/change_current", http.HandlerFunc(s.ChangeCurrentTask))
 	router.Handle("/update", http.HandlerFunc(s.UpdateTasks))
+
+	ticker := time.NewTicker(time.Second * 30)
+
+	go func() {
+		// TODO refactor
+		for _ = range ticker.C {
+			if s.Schedule == nil {
+				continue
+			}
+			current := s.Schedule.CurrentTask
+			err := s.Schedule.UpdateCurrentTask()
+			if err != nil {
+				fmt.Println(err)
+			}
+			newCurrent := s.Schedule.CurrentTask
+			if newCurrent != nil && current != newCurrent {
+				err := s.NtfyNewCurrent(
+					NtfyId,
+					TaskModel{
+						newCurrent.Description,
+						newCurrent.Tag,
+						newCurrent.EndTime.Format(time.TimeOnly),
+					},
+				)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}
+		}
+	}()
 
 	log.Printf("Running on %s\n", portStr)
 	err := http.ListenAndServe(Address+":"+portStr, router)

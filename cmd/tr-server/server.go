@@ -36,7 +36,7 @@ func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	current, idx := s.Schedule.Tasks.GetTaskAtTime(time.Now())
-	if idx == -1 { // TODO check that this doesn't break anything
+	if idx == -1 { 
 		s.Schedule.CurrentTask = nil
 		s.Schedule.CurrentID = -1
 	} else if idx != s.Schedule.CurrentID {
@@ -52,12 +52,14 @@ func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 				current.Tag,
 				current.EndTime.Format(time.TimeOnly),
 			}
-			err = s.ntfyNewCurrent(NtfyId, currentModel)
+			err = s.NtfyNewCurrent(NtfyId, currentModel)
 			if err != nil {
 				log.Printf("GetSchedule: %s", err.Error())
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
+			// TODO delete this line
+			fmt.Println("ntfy sent")
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -87,6 +89,21 @@ func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 			log.Printf("GetCurrentTask: %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
+		}
+		if NtfyId != "" {
+			currentModel := TaskModel{
+				current.Description,
+				current.Tag,
+				current.EndTime.Format(time.TimeOnly),
+			}
+			err = s.NtfyNewCurrent(NtfyId, currentModel)
+			if err != nil {
+				log.Printf("GetSchedule: %s", err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			// TODO delete this line
+			fmt.Println("ntfy sent")
 		}
 	}
 	msg, err := json.Marshal(map[string]struct {
@@ -139,6 +156,16 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	if NtfyId != "" {
+			currentModel := taskModel
+			err = s.NtfyNewCurrent(NtfyId, currentModel)
+			if err != nil {
+				log.Printf("GetSchedule: %s", err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			fmt.Println("ntfy sent")
+		}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -229,7 +256,7 @@ func (s *Server) PlanSchedule(w http.ResponseWriter, r *http.Request) {
 	// TODO implement
 }
 
-func (s *Server) ntfyNewCurrent(ntfyId string, task TaskModel) error {
+func (s *Server) NtfyNewCurrent(ntfyId string, task TaskModel) error {
 	// TODO implement
 	req, err := http.NewRequest("POST", "https://ntfy.sh/" + ntfyId,
 		strings.NewReader("Until " + task.Until))
@@ -243,7 +270,7 @@ func (s *Server) ntfyNewCurrent(ntfyId string, task TaskModel) error {
 	return err
 }
 
-func (s *Server) ntfyNewSchedule() error {
+func (s *Server) NtfyNewSchedule() error {
 	// TODO implement
 	return nil
 }
