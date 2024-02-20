@@ -16,7 +16,6 @@ const DefaultPort = 6576
 
 var (
 	Address = "127.0.0.1"
-	NtfyId  = ""
 )
 
 func main() {
@@ -30,6 +29,7 @@ func main() {
 	// TODO ensure port value is valid
 	var port int
 	var standalone bool
+	var NtfyId string
 	flag.IntVar(&port, "p", DefaultPort, "The port that the server will run on")
 	flag.BoolVar(&standalone, "sa", false, "Whether or not the server is run locally (StandAlone)")
 	flag.StringVar(&NtfyId, "n", "", "The ntfy.sh address to send push notifications to.")
