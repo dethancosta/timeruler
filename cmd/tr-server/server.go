@@ -15,9 +15,9 @@ import (
 )
 
 type Server struct {
-	Owner    string // TODO replace with actual credentials for auth
-	Addr     string // Address of the server
-	Ntfy string
+	Owner string // TODO replace with actual credentials for auth
+	Addr  string // Address of the server
+	Ntfy  string
 
 	Schedule *tr.Schedule
 }
@@ -36,7 +36,7 @@ func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	current, idx := s.Schedule.Tasks.GetTaskAtTime(time.Now())
-	if idx == -1 { 
+	if idx == -1 {
 		s.Schedule.CurrentTask = nil
 		s.Schedule.CurrentID = -1
 	} else if idx != s.Schedule.CurrentID {
@@ -157,15 +157,15 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if NtfyId != "" {
-			currentModel := taskModel
-			err = s.NtfyNewCurrent(NtfyId, currentModel)
-			if err != nil {
-				log.Printf("GetSchedule: %s", err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			fmt.Println("ntfy sent")
+		currentModel := taskModel
+		err = s.NtfyNewCurrent(NtfyId, currentModel)
+		if err != nil {
+			log.Printf("GetSchedule: %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
+		fmt.Println("ntfy sent")
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -249,6 +249,22 @@ func (s *Server) BuildSchedule(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	current, idx := s.Schedule.Tasks.GetTaskAtTime(time.Now())
+	if NtfyId != "" && idx != -1 {
+		currentModel := TaskModel{
+			current.Description,
+			current.Tag,
+			current.EndTime.Format(time.TimeOnly),
+		}
+		err = s.NtfyNewCurrent(NtfyId, currentModel)
+		if err != nil {
+			log.Printf("GetSchedule: %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		fmt.Println("ntfy sent")
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -258,8 +274,8 @@ func (s *Server) PlanSchedule(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) NtfyNewCurrent(ntfyId string, task TaskModel) error {
 	// TODO implement
-	req, err := http.NewRequest("POST", "https://ntfy.sh/" + ntfyId,
-		strings.NewReader("Until " + task.Until))
+	req, err := http.NewRequest("POST", "https://ntfy.sh/"+ntfyId,
+		strings.NewReader("Until "+task.Until))
 	if err != nil {
 		return err
 	}

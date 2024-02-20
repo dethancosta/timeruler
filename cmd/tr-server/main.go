@@ -16,7 +16,7 @@ const DefaultPort = 6576
 
 var (
 	Address = "127.0.0.1"
-	NtfyId = ""
+	NtfyId  = ""
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	s := Server{
 		Owner: "",
 		Addr:  "",
-		Ntfy: "",
+		Ntfy:  "",
 	}
 
 	// TODO ensure port value is valid

@@ -97,19 +97,19 @@ func TestResolve(t *testing.T) {
 }
 
 func TestConflicts(t *testing.T) {
-	t1 := NewTask("", time.Now(), time.Now().Add(5 * time.Minute))
-	t2 := NewTask("", time.Now().Add(5 * time.Minute), time.Now().Add(15 * time.Minute))
+	t1 := NewTask("", time.Now(), time.Now().Add(5*time.Minute))
+	t2 := NewTask("", time.Now().Add(5*time.Minute), time.Now().Add(15*time.Minute))
 	t3 := NewTask("", time.Now().Add(10*time.Minute), time.Now().Add(20*time.Minute))
-	if (t1.Conflicts(t2)) {
+	if t1.Conflicts(t2) {
 		t.Fatalf("t2 should not conflict with t1")
 	}
-	if (t2.Conflicts(t1)) {
+	if t2.Conflicts(t1) {
 		t.Fatalf("t2 Conflicts() should be reflexive")
 	}
-	if (!t3.Conflicts(t2)) {
+	if !t3.Conflicts(t2) {
 		t.Fatalf("t2 should conflict with t3")
 	}
-	if (!t2.Conflicts(t3)) {
+	if !t2.Conflicts(t3) {
 		t.Fatalf("t3 Conflicts() should be reflexive")
 	}
 

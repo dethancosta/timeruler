@@ -33,7 +33,7 @@ func TestNewTaskList(t *testing.T) {
 		t.Fatalf("Expected length: 4, Actual length: %d", len(validList))
 	}
 	for i := 0; i < len(validList)-1; i++ {
-		if !validList.get(i).StartTime.Before(validList.get(i+1).StartTime) {
+		if !validList.get(i).StartTime.Before(validList.get(i + 1).StartTime) {
 			t.Fatalf("Tasks should be in order")
 		}
 		if !(validList.get(i).EndTime == validList.get(i+1).StartTime) {

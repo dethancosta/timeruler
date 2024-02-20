@@ -320,7 +320,7 @@ func TestChangeCurrentTaskUntil(t *testing.T) {
 
 func TestFixBreaks(t *testing.T) {
 	// TODO finish implementing
-	tl, err := NewTaskList(NewTask("", time.Now(), time.Now().Add(5 * time.Minute)))
+	tl, err := NewTaskList(NewTask("", time.Now(), time.Now().Add(5*time.Minute)))
 	if err != nil {
 		t.Fatalf("NewTaskList should not throw error: %s", err.Error())
 	}
