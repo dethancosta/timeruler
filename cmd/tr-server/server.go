@@ -46,13 +46,13 @@ func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		if NtfyId != "" {
+		if s.Ntfy != "" {
 			currentModel := TaskModel{
 				current.Description,
 				current.Tag,
 				current.EndTime.Format(time.TimeOnly),
 			}
-			err = s.NtfyNewCurrent(NtfyId, currentModel)
+			err = s.NtfyNewCurrent(s.Ntfy, currentModel)
 			if err != nil {
 				log.Printf("GetSchedule: %s", err.Error())
 				w.WriteHeader(http.StatusInternalServerError)
@@ -90,13 +90,13 @@ func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		if NtfyId != "" {
+		if s.Ntfy != "" {
 			currentModel := TaskModel{
 				current.Description,
 				current.Tag,
 				current.EndTime.Format(time.TimeOnly),
 			}
-			err = s.NtfyNewCurrent(NtfyId, currentModel)
+			err = s.NtfyNewCurrent(s.Ntfy, currentModel)
 			if err != nil {
 				log.Printf("GetSchedule: %s", err.Error())
 				w.WriteHeader(http.StatusInternalServerError)
@@ -156,9 +156,9 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	if NtfyId != "" {
+	if s.Ntfy != "" {
 		currentModel := taskModel
-		err = s.NtfyNewCurrent(NtfyId, currentModel)
+		err = s.NtfyNewCurrent(s.Ntfy, currentModel)
 		if err != nil {
 			log.Printf("GetSchedule: %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
@@ -250,13 +250,13 @@ func (s *Server) BuildSchedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	current, idx := s.Schedule.Tasks.GetTaskAtTime(time.Now())
-	if NtfyId != "" && idx != -1 {
+	if s.Ntfy != "" && idx != -1 {
 		currentModel := TaskModel{
 			current.Description,
 			current.Tag,
 			current.EndTime.Format(time.TimeOnly),
 		}
-		err = s.NtfyNewCurrent(NtfyId, currentModel)
+		err = s.NtfyNewCurrent(s.Ntfy, currentModel)
 		if err != nil {
 			log.Printf("GetSchedule: %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
