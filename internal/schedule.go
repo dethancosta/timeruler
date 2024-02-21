@@ -263,7 +263,11 @@ func BuildFromFile(fileName string) (*Schedule, error) {
 
 		// Set task times to the current day (for now)
 		now := time.Now()
-		start, err = time.Parse(time.TimeOnly, line[1])
+		starttime := line[1]
+		if len(strings.Split(starttime, ":")) == 2 {
+			starttime += ":00"
+		}
+		start, err = time.Parse(time.TimeOnly, starttime)
 		if err != nil {
 			return nil, errors.New("BuildFromFile: time value improperly formatted on line " + strconv.Itoa(lc))
 		}
