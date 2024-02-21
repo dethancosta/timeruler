@@ -36,6 +36,9 @@ func main() {
 	flag.Parse()
 	portStr := strconv.Itoa(port)
 	s.Ntfy = NtfyId
+	log.Printf("ntfyid: %s", NtfyId) //TODO delete
+	log.Printf("s.ntfy: %s", s.Ntfy) //TODO delete
+	log.Printf("standalone: %t", standalone) //TODO delete
 
 	if standalone {
 		err := SetPid(Address, portStr)

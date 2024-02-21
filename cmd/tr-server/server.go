@@ -59,7 +59,7 @@ func (s *Server) GetSchedule(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			// TODO delete this line
-			fmt.Println("ntfy sent")
+			log.Println("ntfy sent")
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -103,7 +103,7 @@ func (s *Server) GetCurrentTask(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			// TODO delete this line
-			fmt.Println("ntfy sent")
+			log.Println("ntfy sent")
 		}
 	}
 	msg, err := json.Marshal(map[string]struct {
@@ -164,7 +164,7 @@ func (s *Server) ChangeCurrentTask(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		fmt.Println("ntfy sent")
+		log.Println("ntfy sent")
 	}
 	w.WriteHeader(http.StatusOK)
 }
@@ -262,7 +262,7 @@ func (s *Server) BuildSchedule(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		fmt.Println("ntfy sent")
+		log.Println("ntfy sent")
 	}
 
 	w.WriteHeader(http.StatusOK)
